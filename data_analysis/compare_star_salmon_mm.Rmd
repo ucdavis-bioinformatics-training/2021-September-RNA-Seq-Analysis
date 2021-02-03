@@ -1,0 +1,301 @@
+---
+title: "Comparing STAR and Salmon"
+author: "Bioinformatics Core"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+```{r, include = F, echo=F, warning=FALSE, message=F}
+library(edgeR)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(ggVennDiagram)
+library(tidyr)
+```
+
+```{r ReadData, include = F}
+# These are counts from STAR and Salmon, using both HTStream cleaned reads and raw (not cleaned) reads.
+# see salmon_raw.slurm, salmon.slurm, star_raw.slurm, star.slurm
+
+# Read in star counts:
+star.counts.raw <- read.delim("rnaseq_workshop_counts_raw_mm.txt", row.names = 1)
+star.counts     <- read.delim("rnaseq_workshop_counts_mm.txt", row.names = 1)
+
+# Read salmon.counts:
+salmon.counts.raw <- read.delim("rnaseq_salmon_workshop_counts_raw_mm.txt", row.names = 1)
+salmon.counts     <- read.delim("rnaseq_salmon_workshop_counts_mm.txt", row.names = 1)
+
+# Check uniqueness, then strip versions from the ENSEMBL ids in star.counts.raw and both salmon counts:
+any(duplicated(sapply(strsplit(row.names(star.counts.raw), '.', fixed = T), '[', 1)))
+rownames(star.counts.raw) = sapply(strsplit(row.names(star.counts.raw), '.', fixed = T), '[', 1)
+
+any(duplicated(sapply(strsplit(row.names(salmon.counts.raw), '.', fixed = T), '[', 1)))
+rownames(salmon.counts.raw) = sapply(strsplit(row.names(salmon.counts.raw), '.', fixed = T), '[', 1)
+
+any(duplicated(sapply(strsplit(row.names(salmon.counts), '.', fixed = T), '[', 1)))
+rownames(salmon.counts) = sapply(strsplit(row.names(salmon.counts), '.', fixed = T), '[', 1)
+
+# Slightly modify the sample names so that factors are split by a "." and get factors:
+snames <- colnames(star.counts) # Sample names
+snames
+mouse <- paste("mouse", sapply(strsplit(snames, '_'), '[', 2), sep='_')
+genotype <- sapply(strsplit(snames, "_"), '[', 3)
+cell_type <- sapply(strsplit(snames, "_"), "[", 4)
+
+metadata = data.frame(mouse=mouse, genotype=genotype, cell_type=cell_type, group=interaction(genotype, cell_type))
+
+group <- interaction(mouse, genotype, cell_type)
+
+#Rename columns so that factors are delimited by "."
+colnames(star.counts.raw) <- as.character(group)
+colnames(star.counts) <- as.character(group)
+
+colnames(salmon.counts.raw) <- as.character(group)
+colnames(salmon.counts) <- as.character(group)
+
+samples <- colnames(star.counts)
+
+```
+
+```{r}
+# Create DGELists for all of the datasets:
+d.star.raw <- DGEList(star.counts.raw)
+d.star.raw <- calcNormFactors(d.star.raw)
+
+d.star <- DGEList(star.counts)
+d.star <- calcNormFactors(d.star)
+
+d.salmon.raw <- DGEList(salmon.counts.raw)
+d.salmon.raw <- calcNormFactors(d.salmon.raw)
+
+d.salmon <- DGEList(salmon.counts)
+d.salmon <- calcNormFactors(d.salmon)
+```
+
+
+```{r, include = F}
+
+genes.in.all <- intersect(intersect(rownames(star.counts), rownames(star.counts.raw)), 
+                          intersect(rownames(salmon.counts), rownames(salmon.counts.raw)))
+
+cpms.star <- cpm(d.star, log = T)[genes.in.all,]
+cpms.star.raw <- cpm(d.star.raw, log = T)[genes.in.all,]
+
+cpms.salmon <- cpm(d.salmon, log = T)[genes.in.all,]
+cpms.salmon.raw <- cpm(d.salmon.raw, log = T)[genes.in.all,]
+
+```
+
+```{r DataMunging1, include=F}
+# Pivot count table to long form for ggplot
+cpms.star.raw.l = pivot_longer(data.frame(ENSEMBLID=rownames(cpms.star.raw), cpms.star.raw), 
+                           names_to=c("Sample","Genotype","cell_type"), names_sep='\\.', 
+                           values_to="STAR.raw", cols=all_of(samples))
+
+cpms.star.l = pivot_longer(data.frame(ENSEMBLID=rownames(cpms.star), cpms.star), 
+                           names_to=c("Sample","Genotype","cell_type"), names_sep='\\.', 
+                           values_to="STAR", cols=all_of(samples))
+
+cpms.salmon.raw.l = pivot_longer(data.frame(ENSEMBLID=rownames(cpms.salmon.raw), cpms.salmon.raw), 
+                             names_to=c("Sample", "Genotype", "cell_type"), names_sep='\\.',
+                             values_to="Salmon.raw", cols=all_of(samples))
+
+cpms.salmon.l = pivot_longer(data.frame(ENSEMBLID=rownames(cpms.salmon), cpms.salmon), 
+                             names_to=c("Sample", "Genotype", "cell_type"), names_sep='\\.',
+                             values_to="Salmon", cols=all_of(samples))
+
+# Join datasets:
+df = inner_join(cpms.star.raw.l, cpms.star.l, by=c("ENSEMBLID", "Sample", "Genotype", "cell_type"))
+df = inner_join(df, cpms.salmon.raw.l, by=c("ENSEMBLID", "Sample", "Genotype", "cell_type"))                
+df = inner_join(df, cpms.salmon.l, by=c("ENSEMBLID", "Sample", "Genotype", "cell_type"))    
+
+df.subset = filter(df, Sample %in% c("mouse_110", "mouse_148"))
+
+```
+
+--------
+
+### How had cleaning impacted read counts? 
+
+The following plots compare 4 samples that are representative of the rest of the dataset.
+
+STAR CPMs using raw data on y-axis vs STAR CPMs using cleaned data on x-axis.
+
+```{r Star.StarRaw, fig.width=8, fig.height=8, message=F, warning=F, echo=F}
+
+ggplot(df.subset, aes(x=STAR, y=STAR.raw)) +
+  geom_point() + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + 
+  xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + 
+  facet_grid(rows= vars(Sample), cols=vars(cell_type))
+```
+
+
+Salmon CPM values using raw data on y-axis vs Salmon using cleaned data on x-axis.
+
+```{r Salmon.SalmonRaw, fig.width=8, fig.height=8, message=F, warning=F, echo=F}
+ggplot(df.subset, aes(x=Salmon, y=Salmon.raw)) +
+  geom_point() + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + 
+  xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + 
+  facet_grid(rows= vars(Sample), cols=vars(cell_type))
+```
+
+--------
+
+### How does quantification method impact read counts? 
+
+Salmon CPM values using cleaned reads on y-axis vs STAR CPM values using cleaned reads on x-axis.  
+
+
+```{r StarRaw.Salmon, fig.width=8, fig.height=8, message=F, warning=F, echo=F}
+
+ggplot(df.subset, aes(x=STAR, y=Salmon)) +
+  geom_point() + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + 
+  xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + 
+  facet_grid(rows= vars(Sample), cols=vars(cell_type))
+```
+
+
+Note the pattern of genes with low expression with STAR and high expression with Salmon.
+
+------
+
+### MDS plot, STAR raw counts:
+
+```{r mds1, fig.width=6, fig.height=6, echo=F}
+nice_colors = c("#999999", "#E69F00", "#56B4E9","#e98756","#c08160","#5800e6", "#CDDC49",
+                "#C475D3", "#E94B30", "#233F57", "#FEE659", "#A1CFDD", "#F4755E", "#D6F6F7","#EB6D58", "#6898BF")
+
+genotype.cell_type <- interaction(genotype, cell_type)
+
+plotMDS(d.star.raw, col = nice_colors[as.numeric(genotype.cell_type)], cex=0.75)
+```
+
+### MDS plot, STAR cleaned counts:
+```{r mds2, fig.width=6, fig.height=6, echo=F}
+plotMDS(d.star, col = nice_colors[as.numeric(genotype.cell_type)], cex=0.75)
+```
+
+### MDS plot, Salmon raw counts
+```{r mds3, fig.width=6, fig.height=6, echo=F}
+plotMDS(d.salmon.raw, col = nice_colors[as.numeric(genotype.cell_type)], cex=0.75)
+```
+
+### MDS plot, Salmon cleaned counts
+```{r mds4, fig.width=6, fig.height=6, echo=F}
+plotMDS(d.salmon, col = nice_colors[as.numeric(genotype.cell_type)], cex=0.75)
+```
+
+```{r FitModels, include = F}
+# Get a list of DEGs for one comparison:
+
+## Filter datasets on CPM > 2 and genes listed in all:
+d.star.raw.0 <- d.star.raw[genes.in.all, ]
+d.star.0 <- d.star[genes.in.all, ]
+d.salmon.raw.0 <- d.salmon.raw[genes.in.all, ]
+d.salmon.0 <- d.salmon[genes.in.all, ]
+
+tmp = cbind(cpm(d.star.raw.0), cpm(d.star.0), cpm(d.salmon.raw.0), cpm(d.salmon.0))
+cutoff <- 2
+drop <- which(apply(tmp, 1, max) < cutoff)
+length(drop)  # 9690 
+rm(tmp)
+
+d.star.raw.filtered <- d.star.raw.0[-drop, ]
+d.star.filtered <- d.star.0[-drop, ]
+d.salmon.raw.filtered <- d.salmon.raw.0[-drop, ]
+d.salmon.filtered <- d.salmon.0[-drop, ]
+
+table(rownames(d.star.raw.filtered) == rownames(d.star.filtered))
+table(rownames(d.salmon.raw.filtered ) == rownames(d.salmon.filtered))
+
+# Setup model:
+g <- interaction(genotype, cell_type)
+mm <- model.matrix(~0 + g + mouse) # add mouse to the model
+
+# STAR with raw reads, compare the C and NC groups within WT genotype
+y.star.raw <- voom(d.star.raw.filtered, mm, plot=F)
+fit.star.raw <- lmFit(y.star.raw, mm)
+contr <- makeContrasts(gWT.C - gWT.NC, levels = colnames(coef(fit.star.raw)))
+tmp <- contrasts.fit(fit.star.raw, contr)
+tmp <- eBayes(tmp)
+DE.star.raw <- topTable(tmp, sort.by = "P", n=Inf)
+
+# STAR with cleaned reads, compare the C and NC groups within WT genotype
+y.star <- voom(d.star.filtered, mm, plot=F)
+fit.star <- lmFit(y.star, mm)
+contr <- makeContrasts(gWT.C - gWT.NC, levels = colnames(coef(fit.star)))
+tmp <- contrasts.fit(fit.star, contr)
+tmp <- eBayes(tmp)
+DE.star <- topTable(tmp, sort.by = "P", n=Inf)
+
+# SALMON with raw reads, using same mm and contr as above:
+y.salmon.raw <- voom(d.salmon.raw.filtered, mm)
+fit.salmon.raw <- lmFit(y.salmon.raw, mm)
+tmp <- contrasts.fit(fit.salmon.raw, contr)
+tmp <- eBayes(tmp)
+DE.salmon.raw <- topTable(tmp, sort.by = "P", n=Inf) 
+
+# SALMON with cleaned reads, using same mm and contr as above:
+y.salmon <- voom(d.salmon.filtered, mm)
+fit.salmon <- lmFit(y.salmon, mm)
+tmp <- contrasts.fit(fit.salmon, contr)
+tmp <- eBayes(tmp)
+DE.salmon <- topTable(tmp, sort.by = "P", n=Inf) 
+
+```
+
+### Top 10 genes with STAR on cleaned reads
+```{r, echo=F}
+head(DE.star[, c("logFC","AveExpr","adj.P.Val")], 10)
+```
+
+### Top 10 genes with Salmon
+```{r, echo=F}
+head(DE.salmon[, c("logFC","AveExpr","adj.P.Val")], 10)
+```
+
+### Totals genes DE at adj.P.val < 0.05
+STAR + without cleaning : `r length(which(DE.star.raw$adj.P.Val < 0.05))`.
+
+STAR + with cleaning : `r length(which(DE.star$adj.P.Val < 0.05))`.
+
+Salmon + without cleaning: `r length(which(DE.salmon.raw$adj.P.Val < 0.05))`.
+
+Salmon + with cleaning: `r length(which(DE.salmon$adj.P.Val < 0.05))`.
+
+### Overlap in DEGs at adj.P.val < 0.05  
+
+```{r vennDiagram1, echo=F}
+x = list(STAR.raw=rownames(DE.star.raw)[DE.star.raw$adj.P.Val < 0.05],
+         STAR.cleaned=rownames(DE.star)[DE.star$adj.P.Val < 0.05],
+         Salmon.raw=rownames(DE.salmon.raw)[DE.salmon.raw$adj.P.Val < 0.05],
+         Salmon.cleaned=rownames(DE.salmon)[DE.salmon$adj.P.Val < 0.05])
+ggVennDiagram(x)
+```
+
+
+### Overlap in top 100 DEGs (sorted by P value)  
+```{r vennDiagram2, echo=F}
+x = list(STAR.raw=rownames(DE.star.raw)[1:100],
+         STAR.cleaned=rownames(DE.star)[1:100],
+         Salmon.raw=rownames(DE.salmon.raw)[1:100],
+         Salmon.cleaned=rownames(DE.salmon)[1:100])
+ggVennDiagram(x)
+```
+
+### Conclusions
+* STAR and Salmon show differences in quantification of low expressed genes.
+* This does not seem to have much impact on the relative distances between samples or differential expression (note that low expressed genes are often filtered out before analysis).
+* Pick one approach for a project and go with it.
+* Don't run multiple analyses and pick the one that gives you the most DE genes.
+
+
+
+
+

@@ -1,0 +1,92 @@
+theme: jekyll-theme-minimal
+title: 'mRNA-Seq Workshop'
+show_downloads: True
+google_analytics: True
+navigation:
+  - title: Home
+    url: /
+
+  - heading: Introduction and Lectures
+  - title: Intro to the Workshop and Core
+    url: base/welcome
+  - title: Schedule
+    url: base/schedule
+  - title: What is Bioinformatics/Genomics?
+    url: https://raw.githubusercontent.com/ucdavis-bioinformatics-training/ucdavis-bioinformatics-training.presentations/master/genomics/Genomics_a_perspective_May_2020.pdf
+  - title: Experimental Design and Cost Estimation
+    url: https://raw.githubusercontent.com/ucdavis-bioinformatics-training/ucdavis-bioinformatics-training.presentations/master/mrna/mRNAseq-expDesign_May_2020.pdf
+  - title: RNA Sequencing Technologies - Dr. Lutz Froenicke
+    url: https://raw.githubusercontent.com/ucdavis-bioinformatics-training/ucdavis-bioinformatics-training.presentations/master/mrna/Bioinformatics_Workshop_2020_2_RNA_s.pdf
+
+  - heading: Support
+  - title: Using Zoom
+    url: base/zoom
+  - title: Using Slack
+    url: base/slack
+  - title: Cheat Sheets
+    url: base/cheatSheetIndex
+  - title: Software and Links
+    url: software_scripts/software
+  - title: Scripts
+    url: software_scripts/scripts_links
+
+  - heading: Prerequisites
+  - title: CLI - Logging in and Transferring Files
+    url: prerequisites/cli/logging-in
+  - title: CLI - Intro to Command-Line
+    url: prerequisites/cli/command-line-intro
+  - title: CLI - Advanced Command-Line (extra)
+    url: prerequisites/cli/advanced-command-line
+  - title: CLI - Running jobs on the Cluster and using modules
+    url: prerequisites/cli/cluster
+  - title: R - Getting Started
+    url: prerequisites/intro2R/RStudio
+  - title: R - Intro to R
+    url: prerequisites/intro2R/Intro2R_mm
+  - title: R - Prepare Data in R (extra)
+    url: prerequisites/intro2R/data_in_R_prepare
+  - title: R - Data in R (extra)
+    url: prerequisites/intro2R/data_in_R_fixed
+  - title: More Materials (extra)
+    url: https://ucdavis-bioinformatics-training.github.io/2019-Winter-Bioinformatics_Command_Line_and_R_Prerequisites_Workshop/
+
+  - heading: Data Reduction
+  - title: Files and Filetypes
+    url: data_reduction/filetypes
+  - title: Prepare dataset
+    url: data_reduction/00-project_setup_mm
+  - title: Preprocessing raw data
+    url: data_reduction/01-preproc_htstream_mm
+  - title: Indexing a Genome
+    url: data_reduction/02-alignment-indexref_mm
+  - title: Alignment with Star
+    url: data_reduction/02-alignment_mm
+  - title: Generating counts tables
+    url: data_reduction/03-counts_mm
+  - title: Alignment/Counts with Salmon (Extra)
+    url: data_reduction/02-salmon_mm
+
+  - heading: Data analysis
+  - title: Prepare R for data analysis
+    url: data_analysis/de_analysis_prepare_mm
+  - title: Annotation from BioMart
+    url: data_analysis/annotation_mm
+  - title: Differential Expression Analysis
+    url: data_analysis/DE_Analysis_mm
+  - title: Pathway Analysis
+    url: data_analysis/enrichment_mm
+  - title: Comparison between STAR and Salmon
+    url: data_analysis/compare_star_salmon_mm
+
+
+  - heading: ETC
+  - title: Closing thoughts
+    url: base/closing
+  - title: Workshop Photos
+    url: photos/photos
+  - title: Github page
+    url: https://github.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop
+  - title: Report Errors
+    url: https://github.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/issues
+  - title: Biocore website
+    url: http://bioinformatics.ucdavis.edu

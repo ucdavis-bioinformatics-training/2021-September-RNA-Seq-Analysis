@@ -1,0 +1,152 @@
+---
+title: "Comparing STAR and Salmon"
+author: "Bioinformatics Core"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+```{r, include = F, echo=F, warning=FALSE, message=F}
+library(edgeR)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(ggVennDiagram)
+```
+
+```{r, include = F}
+star.counts.raw <- read.delim("rnaseq_workshop_counts_raw.txt", row.names = 1)
+star.counts     <- read.delim("rnaseq_workshop_counts.txt", row.names = 1)
+
+salmon.counts.raw <- read.delim("rnaseq_salmon_workshop_counts_raw.txt", row.names = 1)
+salmon.counts     <- read.delim("rnaseq_salmon_workshop_counts.txt", row.names = 1)
+
+snames <- colnames(star.counts) # Sample names
+snames
+factor1 <- substr(snames, 7, 7) 
+factor2 <- substr(snames, 8, 8)
+group <- interaction(factor1, factor2)
+```
+
+```{r}
+d.star.raw <- DGEList(star.counts.raw)
+d.star.raw <- calcNormFactors(d.star.raw)
+d.star <- DGEList(star.counts)
+d.star <- calcNormFactors(d.star)
+d.salmon.raw <- DGEList(salmon.counts.raw)
+d.salmon.raw <- calcNormFactors(d.salmon.raw)
+d.salmon <- DGEList(salmon.counts)
+d.salmon <- calcNormFactors(d.salmon)
+```
+
+### Pairwise correlations of normalized counts on same sample
+```{r, include = F}
+samples <- colnames(star.counts)[1:4]
+genes.in.both <- intersect(intersect(intersect(rownames(star.counts), rownames(salmon.counts)),rownames(salmon.counts.raw)),rownames(star.counts.raw))
+
+cpms.star.raw <- cpm(d.star.raw, log = T)[genes.in.both,]
+cpms.star <- cpm(d.star, log = T)[genes.in.both,]
+cpms.salmon.raw <- cpm(d.salmon.raw, log = T)[genes.in.both,]
+cpms.salmon <- cpm(d.salmon, log = T)[genes.in.both,]
+```
+
+
+```{r, include = F}
+tmp <- lapply(samples, function(samp, cpms1=cpms.star.raw, cpms2=cpms.star, main="Star raw (x) vs htstream (y)"){
+  df <- data.frame(CPMS1 = cpms1[,samp], CPMS2 = cpms2[,samp])
+  g <- ggplot(df, aes(x = CPMS1, y = CPMS2)) + geom_point() + ggtitle(samp) + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + ggtitle(paste(main,samp))
+  return(g)
+})
+```
+
+
+```{r fig.width=8, message = F, warning = F}
+marrangeGrob(tmp, nrow = 2, ncol = 2)
+```
+
+(Figure shows 4 samples, these are representative of pattern on remaining samples.)
+
+```{r, include = F}
+tmp <- lapply(samples, function(samp, cpms1=cpms.salmon.raw, cpms2=cpms.salmon, main="Salmon raw (x) vs htstream (y)"){
+  df <- data.frame(CPMS1 = cpms1[,samp], CPMS2 = cpms2[,samp])
+  g <- ggplot(df, aes(x = CPMS1, y = CPMS2)) + geom_point() + ggtitle(samp) + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + ggtitle(paste(main,samp))
+  return(g)
+})
+```
+
+
+```{r fig.width=8, message = F, warning = F}
+marrangeGrob(tmp, nrow = 2, ncol = 2)
+```
+
+```{r, include = F}
+tmp <- lapply(samples, function(samp, cpms1=cpms.star.raw, cpms2=cpms.salmon, main="Star (x) vs Salmon (y)"){
+  df <- data.frame(CPMS1 = cpms1[,samp], CPMS2 = cpms2[,samp])
+  g <- ggplot(df, aes(x = CPMS1, y = CPMS2)) + geom_point() + ggtitle(samp) + geom_abline(slope = 1, intercept = 0, col = "blue", lty = 2) + xlim(0, 15) + ylim(0, 15) + theme(plot.margin = margin(0,2,2,2)) + ggtitle(paste(main,samp))
+  return(g)
+})
+```
+
+
+```{r fig.width=8, message = F, warning = F}
+marrangeGrob(tmp, nrow = 2, ncol = 2)
+```
+
+Note the pattern of genes with low expression with STAR and high expression with Salmon.
+
+
+### MDS plot, STAR counts:
+```{r fig.width=6}
+plotMDS(d.star, col = as.numeric(group), cex=0.75)
+```
+
+### MDS plot, Salmon counts
+```{r fig.width=6}
+coords <- plotMDS(d.salmon, col = as.numeric(group), cex=0.75)
+```
+
+
+```{r, include = F}
+DE.star <- read.delim("A.C_v_A.D.txt", row.names = 1)
+# Get A.C_v_A.D list for salmon
+genes.use <- intersect(rownames(DE.star), rownames(salmon.counts))
+DE.star <- DE.star[genes.use,]
+d.salmon.filtered <- d.salmon[genes.use,]
+mm <- model.matrix(~0 + group)
+y.salmon <- voom(d.salmon.filtered, mm)
+fit <- lmFit(y.salmon, mm)
+contr <- makeContrasts(groupA.C - groupA.D, levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+DE.salmon <- topTable(tmp, sort.by = "P", n = Inf)
+
+anno <- read.delim("ensembl_hg_100.tsv", stringsAsFactors = F)
+```
+
+### Top 10 genes with STAR
+```{r}
+head(DE.star[, c("logFC","AveExpr","adj.P.Val")], 10)
+```
+
+### Top 10 genes with Salmon
+```{r}
+head(DE.salmon[, c("logFC","AveExpr","adj.P.Val")], 10)
+```
+
+`r length(which(DE.star$adj.P.Val < 0.05))` genes are DE (adjusted P < 0.05) with STAR, and `r length(which(DE.salmon$adj.P.Val < 0.05))` genes are DE with Salmon.
+
+
+### Conclusions
+* STAR and Salmon show differences in quantification of low expressed genes.
+* This does not seem to have much impact on the relative distances between samples or differential expression (note that low expressed genes are often filtered out before analysis).
+* Pick one approach for a project and go with it.
+* Don't run multiple analyses and pick the one that gives you the most DE genes.
+
+
+
+
+

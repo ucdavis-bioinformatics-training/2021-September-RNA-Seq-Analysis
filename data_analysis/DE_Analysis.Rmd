@@ -1,0 +1,502 @@
+---
+title: "Differential Expression"
+author: "Bioinformatics Core"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+# Differential Gene Expression Analysis in R
+
+* Differential Gene Expression (DGE) between conditions is determined from count data
+* Generally speaking differential expression analysis is performed in a very similar manner to DNA microarrays, once normalization and transformations have been performed.
+
+A lot of RNA-seq analysis has been done in R and so there are many packages available to analyze and view this data. Two of the most commonly used are:
+* DESeq2, developed by Simon Anders (also created htseq) in Wolfgang Huber’s group at EMBL
+* edgeR and Voom (extension to Limma [microarrays] for RNA-seq), developed out of Gordon Smyth’s group from the Walter and Eliza Hall Institute of Medical Research in Australia
+
+xhttp://bioconductor.org/packages/release/BiocViews.html#___RNASeq
+
+## Differential Expression Analysis with Limma-Voom
+
+**limma** is an R package that was originally developed for differential expression (DE) analysis of gene expression microarray data.
+
+**voom** is a function in the limma package that transforms RNA-Seq data for use with limma.
+
+Together they allow fast, flexible, and powerful analyses of RNA-Seq data.  Limma-voom is _our_ tool of choice for DE analyses because it:
+
+* Allows for incredibly flexible model specification (you can include multiple categorical and continuous variables, allowing incorporation of almost any kind of metadata).
+
+* Based on simulation studies, maintains the false discovery rate at or below the nominal rate, unlike some other packages.
+
+* Empirical Bayes smoothing of gene-wise standard deviations provides increased power.  
+
+### Basic Steps of Differential Gene Expression
+1. Read count data and annotation into R and preprocessing.
+2. Calculate normalization factors (sample-specific adjustments)
+3. Filter genes (uninteresting genes, e.g. unexpressed)
+4. Account for expression-dependent variability by transformation, weighting, or modeling
+5. Fitting a linear model
+6. Perform statistical comparisons of interest (using contrasts)
+7. Adjust for multiple testing, Benjamini-Hochberg (BH) or q-value
+8. Check results for confidence
+9. Attach annotation if available and write tables
+
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(edgeR)
+library("RColorBrewer")
+library("gplots")
+```
+
+
+## 1. Read in the counts table and create our DGEList (EdgeR)
+```{r read_count_data}
+counts <- read.delim("rnaseq_workshop_counts.txt", row.names = 1)
+dim(counts) # number of genes
+head(counts)
+```
+
+Create Differential Gene Expression List Object (DGEList) object
+
+```{r dgelist}
+d0 <- DGEList(counts)
+```
+  
+**1a\.** Read in Annotation
+```{r read_annotation}
+anno <- read.delim("ensembl_hg_100.tsv",as.is=T)
+dim(anno)
+head(anno)
+tail(anno)
+any(duplicated(anno$Gene.stable.ID))
+```
+
+**1b\.** Derive experiment metadata from the sample names
+
+Our experiment has two factors, factor1 ("A" or "B") and factor2 ("C" or "D")
+
+The sample names are "Sample" followed by the factor1, followed by the factor2, followed by the replicate
+```{r metadata}
+snames <- colnames(counts) # Sample names
+snames
+factor1 <- substr(snames, 7, 7)
+factor2 <- substr(snames, 8, 8)
+factor1
+factor2
+```
+
+Create a new variable "group" that combines factor1 and factor2
+```{r interaction}
+group <- interaction(factor1, factor2)
+group
+```
+
+Note: you can also enter group information manually, or read it in from an external file.  If you do this, it is $VERY, VERY, VERY$ important that you make sure the metadata is in the same order as the column names of the counts table.
+
+## 2. Preprocessing and Normalization factors
+
+In differential expression analysis, only sample-specific effects need to be normalized, we are NOT concerned with comparisons and quantification of absolute expression.
+
+* Sequence depth – is a sample specific effect and needs to be adjusted for.
+* RNA composition - finding a set of scaling factors for the library sizes that minimize the log-fold changes between the samples for most genes (edgeR uses a trimmed mean of M-values between each pair of sample)
+* GC content – is NOT sample-specific (except when it is)
+* Gene Length – is NOT sample-specific (except when it is)
+
+In edgeR/limma, you calculate normalization factors to scale the raw library sizes (number of reads) using the function calcNormFactors, which by default uses TMM (weighted trimmed means of M values to the reference). Assumes most genes are not DE.
+
+Proposed by Robinson and Oshlack (2010).
+
+```{r preprocess}
+d0 <- calcNormFactors(d0)
+d0$samples
+```
+
+**Note:** calcNormFactors doesn't _normalize_ the data, it just calculates normalization factors for use downstream.
+
+## 3. FilteHScoreg out genes
+
+We filter genes based on non-experimental factors to reduce the number of genes/tests being conducted and therefor do not have to be accounted for in our transformation or multiple testing correction. Commonly we try to remove genes that are either a) unexpressed, or b) unchanging (low-variability).
+
+Common filters include:
+1. to remove genes with a max value (X) of less then Y.
+2. to remove genes that are less than X normalized read counts (cpm) across a certain number of samples. Ex: rowSums(cpms <=1) < 3 , require at least 1 cpm in at least 3 samples to keep.
+3. A less used filter is for genes with minimum variance across all samples, so if a gene isn't changing (constant expression) its inherently not interesting therefor no need to test.
+
+Here we will filter low-expressed genes, remove any row (gene) whose max value (for the row) is less tha cutoff (3).
+```{r filter}
+cutoff <- 3
+drop <- which(apply(cpm(d0), 1, max) < cutoff)
+d <- d0[-drop,]
+dim(d) # number of genes left
+```
+
+"Low-expressed" is subjective and depends on the dataset.
+
+Visualizaing your data with a Multidimensional scaling (MDS) plot
+```{r mds, fig.width=6}
+plotMDS(d, col = as.numeric(group), cex=1)
+```
+
+The MDS plot tells you **A LOT** about what to expect from your experiment.
+
+**3a\.** Extracting "normalized" expression table
+
+### RPKM vs. FPKM vs. CPM and Model Based
+* RPKM - Reads per kilobase per million mapped reads
+* FPKM - Fragments per kilobase per million mapped reads
+* logCPM – log Counts per million [ good for producing MDS plots, estimate of normalized values in model based ]
+* Model based - original read counts are not themselves transformed, but rather correction factors are used in the DE model itself.
+
+We use the `cpm` function with log=TRUE to obtain log-transformed normalized expression data.  On the log scale, the data has less mean-dependent variability and is more suitable for plotting.
+```{r cpm}
+logcpm <- cpm(d, prior.count=2, log=TRUE)
+write.table(logcpm,"rnaseq_workshop_normalized_counts.txt",sep="\t",quote=F)
+```
+
+
+## 4. Voom transformation and calculation of variance weights
+
+Specify the model to be fitted.  We do this before using voom since voom uses variances of the model residuals (observed - fitted)
+```{r model}
+mm <- model.matrix(~0 + group)
+mm
+```
+
+The above specifies a model where each coefficient corresponds to a group mean.
+
+**4a\.** **Voom**
+```{r voom, fig.width=6}
+y <- voom(d, mm, plot = T)
+```
+
+What is voom doing?
+
+1. Counts are transformed to log2 counts per million reads (CPM), where "per million reads" is defined based on the normalization factors we calculated earlier.
+2. A linear model is fitted to the log2 CPM for each gene, and the residuals are calculated.
+3. A smoothed curve is fitted to the sqrt(residual standard deviation) by average expression.
+(see red line in plot above)
+4. The smoothed curve is used to obtain weights for each gene and sample that are passed into limma along with the log2 CPMs.
+
+More details at "[voom: precision weights unlock linear model analysis tools for RNA-seq read counts](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2014-15-2-r29)"
+
+The above plot is a "good" voom plot.  If your voom plot looks like the below (performed on the raw data), you might want to filter more:
+```{r voom_bad, fig.width=6}
+tmp <- voom(d0, mm, plot = T)
+```
+
+
+## 5. Fitting linear models in limma
+
+lmFit fits a linear model using weighted least squares for each gene:
+```{r lmfit}
+fit <- lmFit(y, mm)
+head(coef(fit))
+```
+
+Comparisons between groups (log fold-changes) are obtained as _contrasts_ of these fitted linear models:
+
+## 6. Specify which groups to compare using contrasts:
+
+Comparison between factor2s C and D for factor1 A
+```{r contrast}
+contr <- makeContrasts(groupA.C - groupA.D, levels = colnames(coef(fit)))
+contr
+```
+
+**6a\.** Estimate contrast for each gene
+```{r contrast.fit}
+tmp <- contrasts.fit(fit, contr)
+```
+
+The variance characteristics of low expressed genes are different from high expressed genes, if treated the same, the effect is to over represent low expressed genes in the DE list.
+
+Empirical Bayes smoothing of standard errors (shHScoreks standard errors that are much larger or smaller than those from other genes towards the average standard error) (see "[Linear Models and Empirical Bayes Methods for Assessing Differential Expression in Microarray Experiments](https://www.degruyter.com/doi/10.2202/1544-6115.1027)"
+
+**6b\.** Apply EBayes
+```{r ebayes}
+tmp <- eBayes(tmp)
+```
+
+## 7. Multiple Testing Adjustment
+
+The TopTable. Ajust by Benjamini & Hochberg (BH), or its 'alias' fdr. "[Controlling the false discovery rate: a practical and powerful approach to multiple testing](http://www.jstor.org/stable/2346101).
+
+here `n=Inf` says to produce the topTable for **all** genes. 
+```{r toptable}
+top.table <- topTable(tmp, adjust.method = "BH", sort.by = "P", n = Inf)
+```
+
+### Multiple Testing Correction
+
+\Simply a must! Best choices are:
+  * [FDR](http://www.jstor.org/stable/2346101) (false discovery rate), such as Benjamini-Hochberg (1995).
+  * [Qvalue](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00346) - Storey (2002)
+
+The FDR (or qvalue) is a statement about the list and is no longer about the gene (pvalue). So a FDR of 0.05, says you expect 5% false positives among the list of genes with an FDR of 0.05 or less.
+
+The statement “Statistically significantly different” means FDR of 0.05 or less.
+
+**Matt's opinion** is these genes do not require further validation (e.g. with qrtPCR)
+You can dip below the FDR of 0.05 in the list, but in my opinion you then need to validate those genes (e.g. with qrtPCR)
+
+**7a\.** How many DE genes are there (false discovery rate corrected)?
+```{r count_de}
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+## 8. Check your results for confidence.
+
+You've conducted an experiment, you've seen a phenotype. Now check which genes are most deferentially expressed (show the top 50)? Look up these top genes, their description and ensure they relate to your experiment/phenotype. 
+```{r de_genes_top30}
+head(top.table, 50)
+```
+Columns are
+* logFC: log2 fold change of A.C/A.D
+* AveExpr: Average expression across all samples, in log2 CPM
+* t: logFC divided by its standard error
+* P.Value: Raw p-value (based on t) from test that logFC differs from 0
+* adj.P.Val: Benjamini-Hochberg false discovery rate adjusted p-value
+* B: log-odds that gene is DE (arguably less useful than the other columns)
+
+ENSG00000129824.16 has higher expression at factor2 D than at factor2 C (logFC is netative).  ENSG00000181045.15 has higher expression at factor2 C than at factor2 D (logFC is positive).
+
+
+## 9. Write top.table to a file, adding in cpms and annotation
+```{r}
+top.table$Gene <- rownames(top.table)
+top.table <- top.table[,c("Gene", names(top.table)[1:6])]
+
+top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID.version),],logcpm[match(top.table$Gene,rownames(logcpm)),])
+
+head(top.table)
+write.table(top.table, file = "A.C_v_A.D.txt", row.names = F, sep = "\t", quote = F)
+```
+# Linear models and contrasts
+
+Let's say we want to compare factor1s A and B at factor2 C.  The only thing we have to change is the call to makeContrasts:
+```{r}
+contr <- makeContrasts(groupA.C - groupB.C, levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05)) # number of DE genes
+top.table$Gene <- rownames(top.table)
+top.table <- top.table[,c("Gene", names(top.table)[1:6])]
+
+top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID.version),],logcpm[match(top.table$Gene,rownames(logcpm)),])
+
+write.table(top.table, file = "A.C_v_B.C.txt", row.names = F, sep = "\t", quote = F)
+```
+
+## What if we refit our model as a two-factor model (rather than using the group variable)?
+
+Create new model matrix:
+```{r}
+mm <- model.matrix(~factor1*factor2)
+mm
+```
+
+We are specifying that model includes effects for factor1, factor2, and the factor1-factor2 interaction (which allows the differences between factor1s to differ across factor2)
+
+```{r}
+colnames(mm)
+```
+```{r}
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+head(coef(fit))
+```
+* The coefficient factor1B represents the difference in mean expression between factor1 B and the reference factor1 (factor1 A), _for factor2 C_ (the reference level for factor2)
+* The coefficient factor2D represents the difference in mean expression between factor2 D and factor2 C, _for factor1 A_
+* The coefficient factor1B:factor2D is the difference between factor2s D and C of the differences between factor1s B and A (the interaction effect).
+
+Let's estimate the difference between factor1s A and B at factor2 C
+```{r}
+tmp <- contrasts.fit(fit, coef = 2) # Directly test second coefficient
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05)) # number of DE genes
+```
+We get the same results as with the model where each coefficient corresponded to a group mean.  In essence, these are the _same_ model, so use whichever is most convenient for what you are estimating.
+
+The interaction effects factor1B:factor2D are easier to estimate and test in this setup
+```{r}
+head(coef(fit))
+```
+
+```{r}
+tmp <- contrasts.fit(fit, coef = 4) # Test factor1B:factor2D
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+The log fold change here is the difference between factor1 B and factor1 A in the log fold changes between factor2s D and C.
+
+A gene for which this interaction effect is significant is one for which the effect of factor2 differs between factor1s, and for which the effect of factor1 differs between factor2s.
+
+### More complicated models
+Specifying a different model is simply a matter of changing the calls to model.matrix (and possibly to contrasts.fit).
+
+Let's say we have information on the RNA extraction batch:
+```{r}
+batch <- factor(rep(rep(1:2, each = 2), 4))
+batch
+```
+
+To adjust for batch in the analysis, add batch to the end of the call to model matrix.  Everything else about the code stays the same:
+```{r}
+mm <- model.matrix(~0 + group + batch)
+mm
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+contr <- makeContrasts(groupB.D - groupA.D, levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+What if we want to adjust for a continuous variable like some health score:
+```{r}
+# Generate example health data
+set.seed(99)
+HScore <- rnorm(n = 16, mean = 7.5, sd = 1)
+HScore
+```
+
+Model adjusting for HScore score
+```{r}
+mm <- model.matrix(~0 + group + HScore)
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+contr <- makeContrasts(groupB.D - groupA.D, levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+What if we want to look at the correlation of gene expression with a continuous variable like pH?
+```{r}
+# Generate example pH data
+set.seed(99)
+pH <- rnorm(n = 16, mean = 8, sd = 1.5)
+pH
+```
+
+Specify model matrix:
+```{r}
+mm <- model.matrix(~pH)
+head(mm)
+```
+
+```{r}
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+tmp <- contrasts.fit(fit, coef = 2) # test "pH" coefficient
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+In this case, limma is fitting a linear regression model, which here is a straight line fit, with the slope and intercept defined by the model coefficients:
+```{r}
+ENSG00000227232 <- y$E["ENSG00000227232.5",]
+plot(ENSG00000227232 ~ pH, ylim = c(0, 3.5))
+intercept <- coef(fit)["ENSG00000227232.5", "(Intercept)"]
+slope <- coef(fit)["ENSG00000227232.5", "pH"]
+abline(a = intercept, b = slope)
+slope
+```
+
+In this example, the log fold change logFC is the slope of the line, or the change in gene expression (on the log2 CPM scale) for each unit increase in pH.
+
+Here, a logFC of 0.20 means a 0.20 log2 CPM increase in gene expression for each unit increase in pH, or a 15% increase on the CPM scale (2^0.20 = 1.15).
+
+### A bit more on linear models
+
+Limma fits a linear model to each gene.
+
+Linear models include analysis of variance (ANOVA) models, linear regression, and any model of the form
+
+$$Y = \beta_0 + \beta_{1}X_{1} + \beta_{2}X_{2} + \dots + \beta_{p}X_{p} + \epsilon$$
+The covariates X can be:
+
+* a continuous variable (pH, HScore score, age, weight, temperature, etc.)
+* Dummy variables coding a categorical covariate (like factor1, factor2, and group)
+
+The $\beta$'s are unknown parameters to be estimated.
+
+In limma, the $\beta$'s are the log fold changes.  
+
+The error (residual) term $\epsilon$ is assumed to be normally distributed with a variance that is constant across the range of the data.
+
+Normally distributed means the residuals come from a distribution that looks like this:
+```{r, echo = F}
+hist(rnorm(n = 10000), main = "Normally Distributed Data", breaks=50)
+```
+
+The log2 transformation that voom applies to the counts makes the data "normal enough", but doesn't completely stabilize the variance:
+```{r}
+tmp <- voom(d, mm, plot = T)
+```
+
+The log2 counts per million are more variable at lower expression levels.  The variance weights calculated by voom address this situation.
+
+### Both edgeR and limma have VERY comprehensive user manuals
+
+The limma users' guide has great details on model specification.
+
+* [Limma voom](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf)
+
+* [edgeR](http://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf)
+
+
+# Simple plotting
+
+```{r}
+mm <- model.matrix(~factor1*factor2)
+colnames(mm) <- make.names(colnames(mm))
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+
+contrast.matrix <- makeContrasts(factor1B, factor2D, levels=colnames(coef(fit)))
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
+```
+
+## Volcano plot
+
+```{r fig.width=4, fig.height=4}
+volcanoplot(fit2,coef=1,highlight=8,names=fit$genes$NAME,main="factor1")
+```
+
+## Heatmap
+```{r fig.height=8}
+#using a red and blue colour scheme without traces and scaling each row
+heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none")
+```
+
+## 2 factor venn diagram
+
+```{r fig.width=4, fig.height=4}
+results <- decideTests(fit2)
+vennDiagram(results)
+```
+
+## Download the Enrichment Analysis R Markdown document
+```{r download1, eval=FALSE}
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/data_analysis/enrichment.Rmd", "enrichment.Rmd")
+```
+
+```{r}
+sessionInfo()
+```
