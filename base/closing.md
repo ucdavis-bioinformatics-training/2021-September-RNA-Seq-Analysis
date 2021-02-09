@@ -32,20 +32,11 @@ My recommendation is to follow all of the instructions again, from the beginning
 
 ##  Upcoming Workshops
 
-Now in our 13th year of training researchers, the UC Davis Bioinformatics Core invites you to attend one or more of our 2020 workshops. The following workshops are suitable for beginners to advanced researchers, and are also of interest to those with some data analysis experience.
-
-| :------------- |:-------------:|
-|Aug 12 - Aug 14, 2020 | Introduction to Single Cell RNA-Seq  @ UC Davis |
-|Aug 17 - Aug 19, 2020 | Advanced Single Cell RNA-Seq @ UC Davis |
-|Oct 5 - Oct 9, 2020 | Bioinformatics: Command Line/R Prerequisites |
-|Nov 30 - Dec 4, 2020 | Introduction to Analysis of Epigenetic Data |
-
-For more information on these and other events, and to register, go to [https://registration.genomecenter.ucdavis.edu/](https://registration.genomecenter.ucdavis.edu/)
+Check out our [upcoming course offerings](https://registration.genomecenter.ucdavis.edu/)!
 
 ## Previous Workshops available online
 
 If you would like to take a look at the [documentation](https://ucdavis-bioinformatics-training.github.io/) from previous workshops.
-
 
 ## Questions?
 

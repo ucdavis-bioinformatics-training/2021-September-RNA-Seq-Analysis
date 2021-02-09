@@ -27,7 +27,7 @@ Workshop materials are all posted on github, and publicly available
 
 * This mRNAseq Workshop
 
-[https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/](https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/)
+[https://ucdavis-bioinformatics-training.github.io/2021-September-RNA-Seq-Analysis/](https://ucdavis-bioinformatics-training.github.io/2021-September-RNA-Seq-Analysis/)
 
 ### Workshop Goals
 
@@ -81,14 +81,14 @@ Course lecture, discussions, and one-on-one help/troubleshooting will be conduct
 
 Because video is involved, we ask everyone to be respectful and we reserve the right to remove someone if they are being disrespectful or disruptive.
 
-See the ["Using Zoom"](zoom) topic in the menu for more information.
+See the ["Zoom"](zoom) topic in the menu for more information.
 
 ####  Slack
 
 Text based communication will be conducted via a Slack channel. Staff will be monitoring the Slack channel to answer questions (and schedule a Zoom break out room if needed). If you know the answer to someone else's question, feel free to answer it.
 
-See the ["Using Slack"](slack) topic in the menu for more information.
+See the ["Slack"](slack) topic in the menu for more information.
 
 #### Patience
 
-We ask for a little more patience as this process is also new to us, but we are comitted to providing you the best educational experience we can (under the current conditions).
+We ask for a little more patience as this process is also new to us, but we are committed to providing you the best educational experience we can (under the current conditions).

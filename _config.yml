@@ -1,5 +1,5 @@
 theme: jekyll-theme-minimal
-title: 'mRNA-Seq Workshop'
+title: 'RNA-Seq Analysis'
 show_downloads: True
 google_analytics: True
 navigation:
@@ -19,9 +19,9 @@ navigation:
     url: https://raw.githubusercontent.com/ucdavis-bioinformatics-training/ucdavis-bioinformatics-training.presentations/master/mrna/Bioinformatics_Workshop_2020_2_RNA_s.pdf
 
   - heading: Support
-  - title: Using Zoom
+  - title: Zoom
     url: base/zoom
-  - title: Using Slack
+  - title: Slack
     url: base/slack
   - title: Cheat Sheets
     url: base/cheatSheetIndex
@@ -31,24 +31,10 @@ navigation:
     url: software_scripts/scripts_links
 
   - heading: Prerequisites
-  - title: CLI - Logging in and Transferring Files
-    url: prerequisites/cli/logging-in
-  - title: CLI - Intro to Command-Line
-    url: prerequisites/cli/command-line-intro
-  - title: CLI - Advanced Command-Line (extra)
-    url: prerequisites/cli/advanced-command-line
-  - title: CLI - Running jobs on the Cluster and using modules
-    url: prerequisites/cli/cluster
-  - title: R - Getting Started
-    url: prerequisites/intro2R/RStudio
-  - title: R - Intro to R
-    url: prerequisites/intro2R/Intro2R_mm
-  - title: R - Prepare Data in R (extra)
-    url: prerequisites/intro2R/data_in_R_prepare
-  - title: R - Data in R (extra)
-    url: prerequisites/intro2R/data_in_R_fixed
-  - title: More Materials (extra)
-    url: https://ucdavis-bioinformatics-training.github.io/2019-Winter-Bioinformatics_Command_Line_and_R_Prerequisites_Workshop/
+  - title: CLI
+    url: https://ucdavis-bioinformatics-training.github.io/2021-March-Introduction-to-the-Command-Line-for-Bioinformatics/
+  - title: R
+    url: https://ucdavis-bioinformatics-training.github.io/2021-March-Introduction-to-R-for-Bioinformatics/
 
   - heading: Data Reduction
   - title: Files and Filetypes
@@ -85,8 +71,8 @@ navigation:
   - title: Workshop Photos
     url: photos/photos
   - title: Github page
-    url: https://github.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop
+    url: https://github.com/ucdavis-bioinformatics-training/2021-June-RNA-Seq-Analysis
   - title: Report Errors
-    url: https://github.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/issues
+    url: https://github.com/ucdavis-bioinformatics-training/2021-June-RNA-Seq-Analysis/issues
   - title: Biocore website
     url: http://bioinformatics.ucdavis.edu
