@@ -64,7 +64,6 @@ navigation:
   - title: Comparison between STAR and Salmon
     url: data_analysis/compare_star_salmon_mm
 
-
   - heading: ETC
   - title: Closing thoughts
     url: base/closing
