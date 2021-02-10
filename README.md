@@ -8,7 +8,7 @@ Contact - UC Davis Bioinformatics Core, [training.bioinformatics@ucdavis.edu](ma
 
 This workshop will include a rich collection of lectures and hands-on sessions with individualized instructor support, covering both theory and tools associated with RNA-seq data analysis. Participants will explore experimental design, technology usage, cost estimation, data generation, and analysis (command-line and R) of RNA-Seq data, generated from the Illumina sequencing platform. Participants will use software and protocols, create and modify workflows, and diagnose/treat problematic data utilizing high performance computing services. Exercises will be performed with provided datasets.
 
-A basic understanding of the command line and R is a prerequisite for success in this course. We recommend beginners enroll in our introductory courses in CLI and R. After a brief review on the first day of the course,  we will not be providing instruction in basic CLI or R.
+To get the most out of this course, please complete the prerequisite material in [command line](base/cli_prerequisites) and [R](base/r_prerequisites) before the course, and contact us with any questions.
 
 Participants must have access to a computer with a reliable connection to the internet, current versions of [R version 4.0](https://cloud.r-project.org/) and [Rstudio](https://rstudio.com/products/rstudio/download/#download), and an application that allows them to ssh into a server (see this [page](https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/prerequisites/cli/logging-in))
 
@@ -16,7 +16,7 @@ Participants must have access to a computer with a reliable connection to the in
 
 **Who should attend?** … Prior course participants have included faculty, post docs, grad students, staff, and industry researchers.
 
-**What are the prerequisites?** … A basic understanding of the command line and R is a prerequisite for success in this course. We recommend beginners enroll in our introductory courses in CLI and R. After a brief review on the first day of the course,  we will not be providing instruction in basic CLI or R.
+**What are the prerequisites?** … To get the most out of this course, please complete the prerequisite material in [command line](base/cli_prerequisites) and [R](base/r_prerequisites) before the course, and contact us with any questions.
 
 **What do I need to bring?** … You will need access to a computer with a reliable connection to the internet, current versions of [R version 4.0](https://cloud.r-project.org/) and [Rstudio](https://rstudio.com/products/rstudio/download/#download), and an application that allows them to ssh into a server (see this [page](https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/prerequisites/cli/logging-in)). If your department does not allow you to install software on your computer, please contact us ahead of time.
 
