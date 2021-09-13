@@ -24,8 +24,7 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
 **IF** will need to run this command to update some reference changes our group made last night.
 
 ```bash
-rm -rf  /share/biocore/workshops/2020_mRNAseq/References/star_2.7.3a_index_GRCm38.p6
-ln -s /share/biocore/workshops/2020_mRNAseq/References/star_2.7.3a_index_GRCm38.p6 /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/References/.
+ln -s /share/biocore/workshops/2020_mRNAseq_July/References/star.overlap100.gencode.M25 /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/References/.
 ```
 
 ---
@@ -350,7 +349,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
     echo "My SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
 
     sample=`sed "${SLURM_ARRAY_TASK_ID}q;d" samples.txt`
-    REF="References/star_2.7.3a_index_GRCm38.p6"
+    REF="References/star.overlap100.gencode.M25"
 
     outpath='02-STAR_alignment'
     [[ -d ${outpath} ]] || mkdir ${outpath}
