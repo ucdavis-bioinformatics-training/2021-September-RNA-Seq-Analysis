@@ -42,7 +42,7 @@
 1. First we need to index the genome for STAR. Lets pull down a slurm script to index the Ensembl version of the mouse genome.
 
     ```bash
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/star_index.slurm
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_index.slurm
     less star_index.slurm
     ```
 
@@ -53,8 +53,8 @@
     #SBATCH --time=120
     #SBATCH --mem=40000 # Memory pool for all cores (see also --mem-per-cpu)
     #SBATCH --partition=production
-    #SBATCH --reservation=mrnaseq_workshop
-    #SBATCH --account=mrnaseq_workshop
+    #SBATCH --reservation=workshop
+    #SBATCH --account=workshop
     #SBATCH --output=slurmout/star-index_%A.out # File to which STDOUT will be written
     #SBATCH --error=slurmout/star-index_%A.err # File to which STDERR will be written
     #SBATCH --mail-type=ALL
