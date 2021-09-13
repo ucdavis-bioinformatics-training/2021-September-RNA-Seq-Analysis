@@ -565,7 +565,7 @@ We can now run the preprocessing routine across all samples on the real data usi
 
 ```bash
 cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
-wget https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/software_scripts/scripts/hts_preproc.slurm
+wget https://ucdavis-bioinformatics-training.github.io/2021-September-RNA-Seq-Analysis/software_scripts/scripts/hts_preproc.slurm
 less hts_preproc.slurm
 ```
 
@@ -579,8 +579,8 @@ When you are done, type "q" to exit.
 #SBATCH --time=60
 #SBATCH --mem=3000 # Memory pool for all cores (see also --mem-per-cpu)
 #SBATCH --partition=production
-#SBATCH --reservation=mrnaseq_workshop
-#SBATCH --account=mrnaseq_workshop
+#SBATCH --reservation=workshop
+#SBATCH --account=workshop
 #SBATCH --array=1-22
 #SBATCH --output=slurmout/htstream_%A_%a.out # File to which STDOUT will be written
 #SBATCH --error=slurmout/htstream_%A_%a.err # File to which STDERR will be written
