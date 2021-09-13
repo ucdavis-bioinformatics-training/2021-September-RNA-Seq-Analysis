@@ -184,12 +184,12 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
     and let's run STAR (via srun) on the pair of streamed test files we created earlier:
 
     ```bash
-    srun --time=15:00:00 -n 8 --mem=32g --reservation=mrnaseq_workshop --account=mrnaseq_workshop --pty /bin/bash
+    srun --time=15:00:00 -n 8 --mem=32g --reservation=workshop --account=workshop --pty /bin/bash
     ```
 
     Once you've been given an interactive session we can run STAR. You can ignore the two warnings/errors and you know your on a cluster node because your server will change. Here you see I'm on tadpole, then after the srun command is successful, I am now on drove-13.
 
-    <div class="output">msettles@tadpole:/share/workshop/msettles/rnaseq_example/> HTS_testing$ srun --time=15:00:00 -n 8 --mem=32g --reservation=mrnaseq_workshop --account=mrnaseq_workshop --pty /bin/bash
+    <div class="output">msettles@tadpole:/share/workshop/msettles/rnaseq_example/> HTS_testing$ srun --time=15:00:00 -n 8 --mem=32g --reservation=workshop --account=workshop --pty /bin/bash
     srun: job 29372920 queued and waiting for resources
     srun: job 29372920 has been allocated resources
     groups: cannot find name for group ID 2020
@@ -327,7 +327,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 
     ```bash
     cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/star.slurm
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star.slurm
     less star.slurm
     ```
 
@@ -339,8 +339,8 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
     #SBATCH --time=60
     #SBATCH --mem=32000 # Memory pool for all cores (see also --mem-per-cpu)
     #SBATCH --partition=production
-    #SBATCH --reservation=mrnaseq_workshop
-    #SBATCH --account=mrnaseq_workshop
+    #SBATCH --reservation=workshop
+    #SBATCH --account=workshop
     #SBATCH --array=1-22
     #SBATCH --output=slurmout/star_%A_%a.out # File to which STDOUT will be written
     #SBATCH --error=slurmout/star_%A_%a.err # File to which STDERR will be written
@@ -404,7 +404,7 @@ When you are done, type "q" to exit.
 
     ```bash
     cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/star_stats.sh
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_stats.sh
     bash star_stats.sh
     ```
 
