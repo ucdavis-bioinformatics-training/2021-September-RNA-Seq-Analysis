@@ -40,7 +40,7 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
 1. First we need to index the transcriptome for salmon. Lets pull down a slurm script to get and index the mouse GENCODE version of the transcriptome.
 
     ```bash
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/salmon_index.slurm
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/salmon_index.slurm
     less salmon_index.slurm
     ```
 
@@ -52,8 +52,8 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
     #SBATCH --time=60
     #SBATCH --mem=15000 # Memory pool for all cores (see also --mem-per-cpu)
     #SBATCH --partition=production
-    #SBATCH --reservation=mrnaseq_workshop
-    #SBATCH --account=mrnaseq_workshop
+    #SBATCH --reservation=workshop
+    #SBATCH --account=workshop
     #SBATCH --output=slurmout/salmon-index_%A.out # File to which STDOUT will be written
     #SBATCH --error=slurmout/salmon-index_%A.err # File to which STDERR will be written
     #SBATCH --mail-type=ALL
@@ -136,7 +136,7 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
 
     ```bash
     cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/salmon.slurm
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/salmon.slurm
     less salmon.slurm
     ```
 
@@ -149,8 +149,8 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
     #SBATCH --time=1440
     #SBATCH --mem=20000 # Memory pool for all cores (see also --mem-per-cpu)
     #SBATCH --partition=production
-    #SBATCH --reservation=mrnaseq_workshop
-    #SBATCH --account=mrnaseq_workshop
+    #SBATCH --reservation=workshop
+    #SBATCH --account=workshop
     #SBATCH --output=slurmout/salmon_%A_%a.out # File to which STDOUT will be written
     #SBATCH --error=slurmout/salmon_%A_%a.err # File to which STDERR will be written
 
@@ -247,7 +247,7 @@ cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/
 
     ```bash
     cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
-    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/software_scripts/scripts/salmon_stats.R
+    wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/salmon_stats.R
 	module load R
 	R CMD BATCH salmon_stats.R
     ```
