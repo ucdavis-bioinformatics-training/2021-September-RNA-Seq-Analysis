@@ -24,14 +24,19 @@ library(tidyr)
 # see salmon_raw.slurm, salmon.slurm, star_raw.slurm, star.slurm
 
 # Read in star counts:
-star.counts.raw <- read.delim("rnaseq_workshop_counts_raw_mm.txt", row.names = 1)
-star.counts     <- read.delim("rnaseq_workshop_counts_mm.txt", row.names = 1)
+star.counts.raw <- read.delim("rnaseq_workshop_counts_raw.txt", row.names = 1)
+star.counts     <- read.delim("rnaseq_workshop_counts.txt", row.names = 1)
 
 # Read salmon.counts:
-salmon.counts.raw <- read.delim("rnaseq_salmon_workshop_counts_raw_mm.txt", row.names = 1)
-salmon.counts     <- read.delim("rnaseq_salmon_workshop_counts_mm.txt", row.names = 1)
+salmon.counts.raw <- read.delim("rnaseq_salmon_workshop_counts_raw.txt", row.names = 1)
+salmon.counts     <- read.delim("rnaseq_salmon_workshop_counts.txt", row.names = 1)
+```
 
+```{r check_data, include = F}
 # Check uniqueness, then strip versions from the ENSEMBL ids in star.counts.raw and both salmon counts:
+any(duplicated(sapply(strsplit(row.names(star.counts), '.', fixed = T), '[', 1)))
+rownames(star.counts) = sapply(strsplit(row.names(star.counts), '.', fixed = T), '[', 1)
+
 any(duplicated(sapply(strsplit(row.names(star.counts.raw), '.', fixed = T), '[', 1)))
 rownames(star.counts.raw) = sapply(strsplit(row.names(star.counts.raw), '.', fixed = T), '[', 1)
 
@@ -247,7 +252,6 @@ fit.salmon <- lmFit(y.salmon, mm)
 tmp <- contrasts.fit(fit.salmon, contr)
 tmp <- eBayes(tmp)
 DE.salmon <- topTable(tmp, sort.by = "P", n=Inf) 
-
 ```
 
 ### Top 10 genes with STAR on cleaned reads

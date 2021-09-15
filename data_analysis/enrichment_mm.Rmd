@@ -63,7 +63,7 @@ resultKS <- runTest(GOdata, algorithm = "weight01", statistic = "ks")
 tab <- GenTable(GOdata, raw.p.value = resultKS, topNodes = length(resultKS@score), numChar = 120)
 ```
 
-topGO preferentially tests more specific terms, utilizing the topology of the GO graph. The algorithms used are described in detail [here](https://academic.oup.com/bioinformatics/article/22/13/1600/193669).
+topGO by default preferentially tests more specific terms, utilizing the topology of the GO graph. The algorithms used are described in detail [here](https://academic.oup.com/bioinformatics/article/22/13/1600/193669).
 
 ```{r}
 head(tab, 15)
@@ -76,7 +76,7 @@ head(tab, 15)
 
 The Kolmogorov-Smirnov test directly compares two probability distributions based on their maximum distance.  
 
-To illustrate the KS test, we plot probability distributions of p-values that are and that are not annotated with the term GO:0046661 "male sex differentiation" (66 genes) p-value 0.6494.  (This won't exactly match what topGO does due to their elimination algorithm):
+To illustrate the KS test, we plot probability distributions of p-values that are and that are not annotated with the term GO:0046661 "male sex differentiation" (66 genes) p-value 0.8721.  (This won't exactly match what topGO does due to their elimination algorithm):
 
 ```{r}
 rna.pp.terms <- genesInTerm(GOdata)[["GO:0046661"]] # get genes associated with term
@@ -91,7 +91,7 @@ lines(xx, ecdf.out(xx), col = "black", lwd = 2)
 legend("bottomright", legend = c("Genes Annotated with 'male sex differentiation'", "male sex differentiation'"), lwd = 2, col = 2:1, cex = 0.9)
 ```
 
-versus the probability distributions of p-values that are and that are not annotated with the term GO:0007229 "integrin-mediated signaling pathway" (66 genes) p-value 3.5x10-5.
+versus the probability distributions of p-values that are and that are not annotated with the term GO:0007229 "integrin-mediated signaling pathway" (66 genes) p-value 9.8x10-5.
 
 ```{r}
 rna.pp.terms <- genesInTerm(GOdata)[["GO:0007229"]] # get genes associated with term
@@ -115,6 +115,7 @@ par(cex = 1)
 ```
 
 **3\.** topGO Example Using Fisher's Exact Test
+
 Next, we use Fisher's exact test to test for GO enrichment among significantly DE genes.
 
 Create topGOdata object:
@@ -150,7 +151,9 @@ and compares the probability of the observed table, conditional on the row and c
 
 Advantages over KS (or Wilcoxon) Tests:
 
-*Ease of interpretation
+* Ease of interpretation
+
+* Easier directional testing
 
 Disadvantages:
 
