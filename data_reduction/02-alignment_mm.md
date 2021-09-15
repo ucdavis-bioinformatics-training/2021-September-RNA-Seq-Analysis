@@ -16,6 +16,8 @@
 ```
 mkdir -p /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
 cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
+mkdir References
+ln -s /share/biocore/workshops/2020_mRNAseq_July/References/star.overlap100.gencode.M25 References/
 cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing .
 cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc .
 ```
