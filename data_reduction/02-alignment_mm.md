@@ -327,7 +327,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 1. We can now run STAR across all samples on the real data using a SLURM script, [star.slurm](../scripts/star.slurm), that we should take a look at now.
 
     ```bash
-    cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
+    cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
     wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star.slurm
     less star.slurm
     ```
@@ -445,7 +445,7 @@ When you are done, type "q" to exit.
 
 **Questions:**
 1. Look at the script `star.slurm`. What does the `array=1-22` mean, why is it used, and what is the usage of it in the script itself?
-2. Look through the files in an output directory and check out what is present and discuss what each of them mean. (for example: `cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/02-STAR_alignment/mouse_110_WT_C` )
+2. Look through the files in an output directory and check out what is present and discuss what each of them mean. (for example: `cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example/02-STAR_alignment/mouse_110_WT_C` )
 3. Come up with a brief command you might use to check that all of the sample alignments using STAR have a reasonable output and/or did not produce any errors.
 4. Open `summary_star_alignments.txt` in excel (or excel like application), and review. The table that this script creates ("summary_star_alignments.txt") can be pulled to your laptop via 'scp', or WinSCP, etc., and imported into a spreadsheet. Are all samples behaving similarly? Discuss ...
 5. If time, find some other regions/genes with high expression using IGV with your group. (Looking at genes the paper references is a great place to start)
