@@ -19,7 +19,6 @@ mkdir -p /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
 cd /share/biocore/workshop/mrnaseq_workshop/$USER
 wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_index.slurm
 mkdir References
-wget http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/GRCm39.primary_assembly.genome.fa.gz References
 ln -s /share/biocore/workshops/2020_mRNAseq_July/References/star.overlap100.gencode.M25 References/
 cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing .
 cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc .
@@ -197,7 +196,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 1. Then run the star commands
 
     ```bash
-    module load star
+    module load star/2.7.3a
     STAR \
     --runThreadN 8 \
        --genomeDir ../References/star.overlap100.gencode.M25 \
@@ -355,7 +354,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 
     echo "SAMPLE: ${sample}"
 
-    module load star
+    module load star/2.7.3a
 
     call="STAR
          --runThreadN 8 \
