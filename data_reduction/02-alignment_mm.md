@@ -12,12 +12,13 @@
 ## Initial Setup
 
 *This document assumes [preproc htstream](./preproc_htstream.md) has been completed.*
-**IF** for some reason it didn't finish, is corrupted or you missed the session, you can link over a completed copy
+To catch up to where we are:
+
 ```
 mkdir -p /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
 cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
 mkdir References
-ln -s /share/biocore/workshops/2020_mRNAseq_July/References/star.overlap100.gencode.M25 References/
+wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_index.slurm References/
 cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing .
 cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc .
 ```
