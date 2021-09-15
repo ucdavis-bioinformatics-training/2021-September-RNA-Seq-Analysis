@@ -14,8 +14,10 @@
 *This document assumes [preproc htstream](./preproc_htstream.md) has been completed.*
 **IF** for some reason it didn't finish, is corrupted or you missed the session, you can link over a completed copy
 ```
-cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/.
-cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/.
+mkdir -p /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
+cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example
+cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing .
+cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc .
 ```
 
 
@@ -402,7 +404,7 @@ When you are done, type "q" to exit.
     Use a script of ours, [star_stats.sh](../software_scripts/scripts/star_stats.sh) to collect the alignment stats. Don't worry about the script's contents at the moment; you'll use very similar commands to create a counts table in the next section. For now:
 
     ```bash
-    cd /share/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
+    cd /share/biocore/workshop/mrnaseq_workshop/$USER/rnaseq_example  # We'll run this from the main directory
     wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_stats.sh
     bash star_stats.sh
     ```
@@ -437,7 +439,7 @@ When you are done, type "q" to exit.
     ```bash
     mkdir -p ~/rnaseq_workshop
     cd ~/rnaseq_workshop
-    scp [your_username]@tadpole.genomecenter.ucdavis.edu:/share/workshop/mrnaseq_workshop/[your_username]/rnaseq_example/summary_star_alignments.txt .
+    scp [your_username]@tadpole.genomecenter.ucdavis.edu:/share/biocore/workshop/mrnaseq_workshop/[your_username]/rnaseq_example/summary_star_alignments.txt .
     ```
 
 
