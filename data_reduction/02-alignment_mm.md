@@ -196,7 +196,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 1. Then run the star commands
 
     ```bash
-    module load star/2.7.3a
+    module load star
     STAR \
     --runThreadN 8 \
        --genomeDir ../References/star.overlap100.gencode.M25 \
@@ -354,7 +354,7 @@ What does stranded and unstranded mean? Which is better and why? [Stranded vs Un
 
     echo "SAMPLE: ${sample}"
 
-    module load star/2.7.3a
+    module load star
 
     call="STAR
          --runThreadN 8 \
