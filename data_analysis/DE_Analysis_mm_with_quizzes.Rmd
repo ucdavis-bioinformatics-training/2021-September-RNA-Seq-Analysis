@@ -1,0 +1,817 @@
+---
+title: "Differential Expression"
+author: "Bioinformatics Core"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+<script>
+function buildQuiz(myq, qc){
+  // variable to store the HTML output
+  const output = [];
+
+  // for each question...
+  myq.forEach(
+    (currentQuestion, questionNumber) => {
+
+      // variable to store the list of possible answers
+      const answers = [];
+
+      // and for each available answer...
+      for(letter in currentQuestion.answers){
+
+        // ...add an HTML radio button
+        answers.push(
+          `<label>
+            <input type="radio" name="question${questionNumber}" value="${letter}">
+            ${letter} :
+            ${currentQuestion.answers[letter]}
+          </label><br/>`
+        );
+      }
+
+      // add this question and its answers to the output
+      output.push(
+        `<div class="question"> ${currentQuestion.question} </div>
+        <div class="answers"> ${answers.join('')} </div><br/>`
+      );
+    }
+  );
+
+  // finally combine our output list into one string of HTML and put it on the page
+  qc.innerHTML = output.join('');
+}
+
+function showResults(myq, qc, rc){
+
+  // gather answer containers from our quiz
+  const answerContainers = qc.querySelectorAll('.answers');
+
+  // keep track of user's answers
+  let numCorrect = 0;
+
+  // for each question...
+  myq.forEach( (currentQuestion, questionNumber) => {
+
+    // find selected answer
+    const answerContainer = answerContainers[questionNumber];
+    const selector = `input[name=question${questionNumber}]:checked`;
+    const userAnswer = (answerContainer.querySelector(selector) || {}).value;
+
+    // if answer is correct
+    if(userAnswer === currentQuestion.correctAnswer){
+      // add to the number of correct answers
+      numCorrect++;
+
+      // color the answers green
+      answerContainers[questionNumber].style.color = 'lightgreen';
+    }
+    // if answer is wrong or blank
+    else{
+      // color the answers red
+      answerContainers[questionNumber].style.color = 'red';
+    }
+  });
+
+  // show number of correct answers out of total
+  rc.innerHTML = `${numCorrect} out of ${myq.length}`;
+}
+</script>
+
+
+# Differential Gene Expression Analysis in R
+
+* Differential Gene Expression (DGE) between conditions is determined from count data
+* Generally speaking differential expression analysis is performed in a very similar manner to DNA microarrays, once normalization and transformations have been performed.
+
+A lot of RNA-seq analysis has been done in R and so there are many packages available to analyze and view this data. Two of the most commonly used are:
+* DESeq2, developed by Simon Anders (also created htseq) in Wolfgang Huber’s group at EMBL
+* edgeR and Voom (extension to Limma [microarrays] for RNA-seq), developed out of Gordon Smyth’s group from the Walter and Eliza Hall Institute of Medical Research in Australia
+
+xhttp://bioconductor.org/packages/release/BiocViews.html#___RNASeq
+
+## Differential Expression Analysis with Limma-Voom
+
+**limma** is an R package that was originally developed for differential expression (DE) analysis of gene expression microarray data.
+
+**voom** is a function in the limma package that transforms RNA-Seq data for use with limma.
+
+Together they allow fast, flexible, and powerful analyses of RNA-Seq data.  Limma-voom is _our_ tool of choice for DE analyses because it:
+
+* Allows for incredibly flexible model specification (you can include multiple categorical and continuous variables, allowing incorporation of almost any kind of metadata).
+
+* Based on simulation studies, maintains the false discovery rate at or below the nominal rate, unlike some other packages.
+
+* Empirical Bayes smoothing of gene-wise standard deviations provides increased power.  
+
+### Basic Steps of Differential Gene Expression
+1. Read count data and annotation into R and preprocessing.
+2. Calculate normalization factors (sample-specific adjustments)
+3. Filter genes (uninteresting genes, e.g. unexpressed)
+4. Account for expression-dependent variability by transformation, weighting, or modeling
+5. Fitting a linear model
+6. Perform statistical comparisons of interest (using contrasts)
+7. Adjust for multiple testing, Benjamini-Hochberg (BH) or q-value
+8. Check results for confidence
+9. Attach annotation if available and write tables
+
+```{r load_packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(edgeR)
+library("RColorBrewer")
+library("gplots")
+```
+
+
+## 1. Read in the counts table and create our DGEList
+
+```{r read_count_data}
+counts <- read.delim("rnaseq_workshop_counts.txt", row.names = 1)
+head(counts)
+```
+
+Create Differential Gene Expression List Object (DGEList) object 
+
+A DGEList is an object in the package edgeR for storing count data, normalization factors, and other information
+
+```{r dgelist}
+d0 <- DGEList(counts)
+```
+  
+**1a\.** Read in Annotation
+```{r read_annotation}
+anno <- read.delim("ensembl_mm_104.tsv",as.is=T)
+dim(anno)
+head(anno)
+tail(anno)
+any(duplicated(anno$Gene.stable.ID))
+```
+
+**1b\.** Derive experiment metadata from the sample names
+
+Our experiment has two factors, genotype ("WT", "KOMIR150", or "KOTet3") and cell type ("C" or "NC").
+
+The sample names are "mouse" followed by an animal identifier, followed by the genotype, followed by the cell type.
+```{r metadata}
+sample_names <- colnames(counts)
+metadata <- as.data.frame(strsplit2(sample_names, c("_"))[,2:4], row.names = sample_names)
+colnames(metadata) <- c("mouse", "genotype", "cell_type")
+```
+
+Create a new variable "group" that combines genotype and cell type.
+```{r interaction}
+metadata$group <- interaction(metadata$genotype, metadata$cell_type)
+table(metadata$group)
+table(metadata$mouse)
+```
+
+Note: you can also enter group information manually, or read it in from an external file.  If you do this, it is $VERY, VERY, VERY$ important that you make sure the metadata is in the same order as the column names of the counts table.
+
+## Quiz 1
+
+<div id="quiz1" class="quiz"></div>
+<button id="submit1">Submit Quiz</button>
+<div id="results1" class="output"></div>
+<script>
+quizContainer1 = document.getElementById('quiz1');
+resultsContainer1 = document.getElementById('results1');
+submitButton1 = document.getElementById('submit1');
+
+myQuestions1 = [
+  {
+    question: "How many genes are in the counts table",
+    answers: {
+      a: "`r ncol(counts)`",
+      b: "`r format(nrow(counts), big.mark = ",")`",
+      c: "`r format(sum(counts), big.mark = ",")`",
+    },
+    correctAnswer: "b"
+  },
+  {
+    question: "How many samples are in the counts table",
+    answers: {
+      a: "`r ncol(counts)`",
+      b: "`r format(nrow(counts), big.mark = ",")`",
+      c: "`r format(sum(counts), big.mark = ",")`",
+    },
+    correctAnswer: "a"
+  },
+  {
+    question: "What is the total count across all genes for sample mouse_110_WT_C",
+    answers: {
+      a: "10,000",
+      b: "`r format(colSums(counts)["mouse_110_WT_NC"], big.mark = ",")`",
+      c: "`r format(colSums(counts)["mouse_110_WT_C"], big.mark = ",")`"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "'Extra-credit' question: How many genes have a count of 0 in every sample?",
+    answers: {
+      a: "`r format(sum(rowSums(counts) > 0), big.mark = ",")`",
+      b: "`r format(sum(rowSums(counts) == 0), big.mark = ",")`",
+      c: "`r format(nrow(counts), big.mark = ",")`"
+    },
+    correctAnswer: "b"
+  }
+];
+
+buildQuiz(myQuestions1, quizContainer1);
+submitButton1.addEventListener('click', function() {showResults(myQuestions1, quizContainer1, resultsContainer1);});
+</script>
+
+
+## 2. Preprocessing and Normalization factors
+
+In differential expression analysis, only sample-specific effects need to be normalized, we are NOT concerned with comparisons and quantification of absolute expression.
+
+* Sequence depth – is a sample specific effect and needs to be adjusted for.
+* RNA composition - finding a set of scaling factors for the library sizes that minimize the log-fold changes between he samples for most genes (edgeR uses a trimmed mean of M-values between each pair of sample)
+* GC content – is NOT sample-specific (except when it is)
+* Gene Length – is NOT sample-specific (except when it is)
+
+In edgeR/limma, you calculate normalization factors to scale the raw library sizes (number of reads) using the function calcNormFactors, which by default uses TMM (weighted trimmed means of M values to the reference). Assumes most genes are not DE.
+
+Proposed by Robinson and Oshlack (2010).
+
+```{r preprocess}
+d0 <- calcNormFactors(d0)
+d0$samples
+```
+
+**Note:** calcNormFactors doesn't _normalize_ the data, it just calculates normalization factors for use downstream.
+
+## 3. Filtering genes
+
+We filter genes based on non-experimental factors to reduce the number of genes/tests being conducted and therefor do not have to be accounted for in our transformation or multiple testing correction. Commonly we try to remove genes that are either a) unexpressed, or b) unchanging (low-variability).
+
+Common filters include:
+1. to remove genes with a max value (X) of less then Y.
+2. to remove genes that are less than X normalized read counts (cpm) across a certain number of samples. Ex: rowSums(cpms <=1) < 3 , require at least 1 cpm in at least 3 samples to keep.
+3. A less used filter is for genes with minimum variance across all samples, so if a gene isn't changing (constant expression) its inherently not interesting therefor no need to test.
+
+Here we will filter low-expressed genes, remove any row (gene) whose max value (for the row) is less than the cutoff (2).
+```{r filter}
+cutoff <- 2
+drop <- which(apply(cpm(d0), 1, max) < cutoff)
+d <- d0[-drop,]
+dim(d) # number of genes left
+```
+
+"Low-expressed" is subjective and depends on the dataset.
+
+Visualizing your data with a Multidimensional scaling (MDS) plot.
+```{r mds, fig.width=6}
+plotMDS(d, col = as.numeric(metadata$group), cex=1)
+```
+
+The MDS plot tells you **A LOT** about what to expect from your experiment.
+
+**3a\.** Extracting "normalized" expression table
+
+### RPKM vs. FPKM vs. CPM and Model Based
+* RPKM - Reads per kilobase per million mapped reads
+* FPKM - Fragments per kilobase per million mapped reads
+* logCPM – log Counts per million [ good for producing MDS plots, estimate of normalized values in model based ]
+* Model based - original read counts are not themselves transformed, but rather correction factors are used in the DE model itself.
+
+We use the `cpm` function with log=TRUE to obtain log-transformed normalized expression data.  On the log scale, the data has less mean-dependent variability and is more suitable for plotting.
+```{r cpm}
+logcpm <- cpm(d, prior.count=2, log=TRUE)
+write.table(logcpm,"rnaseq_workshop_normalized_counts.txt",sep="\t",quote=F)
+```
+
+## Quiz 2
+
+<div id="quiz2" class="quiz"></div>
+<button id="submit2">Submit Quiz</button>
+<div id="results2" class="output"></div>
+<script>
+quizContainer2 = document.getElementById('quiz2');
+resultsContainer2 = document.getElementById('results2');
+submitButton2 = document.getElementById('submit2');
+
+myQuestions2 = [
+  {
+    question: "Which sample has the largest normalization factor?",
+    answers: {
+      a: "`r rownames(d0$samples)[which.min(d0$samples$norm.factors)]`",
+      b: "`r rownames(d0$samples)[which.max(d0$samples$norm.factors)]`",
+      c: "`r rownames(d0$samples)[3]`",
+    },
+    correctAnswer: "b"
+  },
+  {
+    question: "Is the sample with the largest normalization factor the sample with the smallest total counts?",
+    answers: {
+      a: "`r rownames(d0$samples)[which.min(d0$samples$lib.size)] != rownames(d0$samples)[which.max(d0$samples$norm.factors)]`",
+      b: "`r rownames(d0$samples)[which.min(d0$samples$lib.size)] == rownames(d0$samples)[which.max(d0$samples$norm.factors)]`"
+    },
+    correctAnswer: "b"
+  },
+  {
+    question: "Based on the MDS plot, what is the biggest source of between-sample differences?",
+    answers: {
+      a: "Genotype",
+      b: "Mouse",
+      c: "Cell type"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Make an MDS plot of the unfiltered data.  How does it differ from the MDS plot of the filtered data?",
+    answers: {
+      a: "The axis ranges are larger",
+      b: "There is less separation",
+      c: "The plots are nearly identical"
+    },
+    correctAnswer: "c"
+  }
+];
+
+buildQuiz(myQuestions2, quizContainer2);
+submitButton2.addEventListener('click', function() {showResults(myQuestions2, quizContainer2, resultsContainer2);});
+</script>
+
+*Note: If you changed the expression cutoff to answer the last quiz question, before proceeding change it back to the original value and rerun the above code using "Run all chunks above" in the Run menu in RStudio.*
+
+## 4. Voom transformation and calculation of variance weights
+
+Specify the model to be fitted.  We do this before using voom since voom uses variances of the model residuals (observed - fitted)
+
+* The model you use will change for every experiment, and this step should be given the most time and attention.*
+
+```{r model}
+group <- metadata$group
+mouse <- metadata$mouse
+mm <- model.matrix(~0 + group + mouse)
+head(mm)
+```
+
+
+**4a\.** **Voom**
+```{r voom, fig.width=6}
+y <- voom(d, mm, plot = T)
+```
+
+What is voom doing?
+
+1. Counts are transformed to log2 counts per million reads (CPM), where "per million reads" is defined based on the normalization factors we calculated earlier.
+2. A linear model is fitted to the log2 CPM for each gene, and the residuals are calculated.
+3. A smoothed curve is fitted to the sqrt(residual standard deviation) by average expression.
+(see red line in plot above)
+4. The smoothed curve is used to obtain weights for each gene and sample that are passed into limma along with the log2 CPMs.
+
+More details at "[voom: precision weights unlock linear model analysis tools for RNA-seq read counts](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2014-15-2-r29)"
+
+If your voom plot looks like the below (performed on the raw data), you might want to filter more:
+```{r voom_bad, fig.width=6}
+tmp <- voom(d0, mm, plot = T)
+```
+
+
+## 5. Fitting linear models in limma
+
+lmFit fits a linear model using weighted least squares for each gene:
+```{r lmfit}
+fit <- lmFit(y, mm)
+head(coef(fit))
+```
+
+Comparisons between groups (log fold-changes) are obtained as _contrasts_ of these fitted linear models:
+
+## 6. Specify which groups to compare using contrasts:
+
+Comparison between cell types for genotype WT.
+```{r contrast}
+contr <- makeContrasts(groupWT.C - groupWT.NC, levels = colnames(coef(fit)))
+contr
+```
+
+**6a\.** Estimate contrast for each gene
+```{r contrast.fit}
+tmp <- contrasts.fit(fit, contr)
+```
+
+The variance characteristics of low expressed genes are different from high expressed genes, if treated the same, the effect is to over represent low expressed genes in the DE list. This is corrected for by the log transformation and voom. However, some genes will have increased or decreased variance that is not a result of low expression, but due to other random factors. We are going to run empirical Bayes to adjust the variance of these genes.
+
+Empirical Bayes smoothing of standard errors (shifts standard errors that are much larger or smaller than those from other genes towards the average standard error) (see "[Linear Models and Empirical Bayes Methods for Assessing Differential Expression in Microarray Experiments](https://www.degruyter.com/doi/10.2202/1544-6115.1027)"
+
+**6b\.** Apply EBayes
+```{r ebayes}
+tmp <- eBayes(tmp)
+```
+
+## 7. Multiple Testing Adjustment
+
+The TopTable. Adjust for multiple testing using method of Benjamini & Hochberg (BH), or its 'alias' fdr. "[Controlling the false discovery rate: a practical and powerful approach to multiple testing](http://www.jstor.org/stable/2346101).
+
+here `n=Inf` says to produce the topTable for **all** genes. 
+```{r toptable}
+top.table <- topTable(tmp, adjust.method = "BH", sort.by = "P", n = Inf)
+```
+
+### Multiple Testing Correction
+
+Simply a must! Best choices are:
+  * [FDR](http://www.jstor.org/stable/2346101) (false discovery rate), such as Benjamini-Hochberg (1995).
+  * [Qvalue](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00346) - Storey (2002)
+
+The FDR (or qvalue) is a statement about the list and is no longer about the gene (pvalue). So a FDR of 0.05, says you expect 5% false positives among the list of genes with an FDR of 0.05 or less.
+
+The statement “Statistically significantly different” means FDR of 0.05 or less.
+
+**7a\.** How many DE genes are there (false discovery rate corrected)?
+```{r count_de}
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+## 8. Check your results for confidence.
+
+You've conducted an experiment, you've seen a phenotype. Now check which genes are most differentially expressed (show the top 50)? Look up these top genes, their description and ensure they relate to your experiment/phenotype. 
+```{r de_genes_top50}
+head(top.table, 50)
+```
+Columns are
+* logFC: log2 fold change of WT.C/WT.NC
+* AveExpr: Average expression across all samples, in log2 CPM
+* t: logFC divided by its standard error
+* P.Value: Raw p-value (based on t) from test that logFC differs from 0
+* adj.P.Val: Benjamini-Hochberg false discovery rate adjusted p-value
+* B: log-odds that gene is DE (arguably less useful than the other columns)
+
+ENSMUSG00000030203.18 has higher expression at WT NC than at WT C (logFC is negative).  ENSMUSG00000026193.16 has higher expression at WT C than at WT NC (logFC is positive).
+
+In the paper, the authors specify that NC cells were identified by low expression of Ly6C (which is now called Ly6c1 or ENSMUSG00000079018.11).  Is this gene differentially expressed?
+```{r}
+top.table["ENSMUSG00000079018.11",]
+d0$counts["ENSMUSG00000079018.11",]
+```
+
+Ly6c1 was removed from our data by the filtering step, because the maximum counts for the gene did not exceed 2.
+
+## 9. Write top.table to a file, adding in cpms and annotation
+```{r}
+top.table$Gene <- rownames(top.table)
+top.table <- top.table[,c("Gene", names(top.table)[1:6])]
+top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID.version),],logcpm[match(top.table$Gene,rownames(logcpm)),])
+
+head(top.table)
+write.table(top.table, file = "WT.C_v_WT.NC.txt", row.names = F, sep = "\t", quote = F)
+```
+
+## Quiz 3
+
+<div id="quiz3" class="quiz"></div>
+<button id="submit3">Submit Quiz</button>
+<div id="results3" class="output"></div>
+<script>
+quizContainer3 = document.getElementById('quiz3');
+resultsContainer3 = document.getElementById('results3');
+submitButton3 = document.getElementById('submit3');
+
+myQuestions3 = [
+  {
+      question: "Based on the above model, how many genes are significantly differentially expressed between WT C and WT NC? (Significant = adjusted P < 0.05)",
+    answers: {
+      a: "`r format(length(which(top.table$P.Value < 0.05)), big.mark = ",")`",
+      b: "0",
+      c: "`r format(length(which(top.table$adj.P.Val < 0.05)), big.mark = ",")`",
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Based on the above model, and without taking significance into account, how many genes have higher expression in WT C than in WT NC",
+    answers: {
+      a: "`r format(length(which(top.table$logFC > 0)), big.mark = ",")`",
+      b: "`r format(length(which(top.table$logFC > 0 & top.table$adj.P.Val < 0.05)), big.mark = ",")`",
+      c: "`r format(length(which(top.table$logFC < 0)), big.mark = ",")`",
+    },
+    correctAnswer: "a"
+  },
+  {
+    question: "How many genes have an unadjusted p-value less than 0.05 for the comparison of WT C to WT NC in the above model",
+    answers: {
+      a: "`r format(length(which(top.table$P.Value < 0.05)), big.mark = ",")`",
+      b: "0",
+      c: "`r format(length(which(top.table$adj.P.Val < 0.05)), big.mark = ",")`",
+    },
+    correctAnswer: "a"
+  },
+  {
+    question: "What is the adjusted p-value for the last gene with unadjusted P < 0.05?  (This is the proportion of the genes with unadjusted P < 0.05 that, on average, would be expected to be false discoveries.)",
+    answers: {
+      a: "0.050",
+      b: "0.511",
+      c: "`r round(top.table$adj.P.Val[max(which(top.table$P.Value < 0.05))], 3)`"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Change the expression cutoff from 2 to 1.  What does the voom plot look like?",
+      answers: {
+        a: "The red line curves down on the left",
+        b: "The red line does not curve down on the left, but there are more points below the red line on the left.",
+        c: "The plot looks identical to that when the cutoff is 2."
+      },
+      correctAnswer: "b"
+  },
+  {
+    question: "Which of these conditions is LEAST likely to indicate a problem with your analysis code?",
+    answers: {
+      a: "Every gene is differentially expressed",
+      b: "No gene is differentially expressed",
+      c: "The top of your gene list is dominated by antisense transcripts"
+    },
+    correctAnswer: "b"
+  },
+  {
+  question: "'Extra credit' question: Rerun the differential expression analysis using a expression filtering cutoff of 1 instead of 2.  How many significantly DE genes do you get for the comparison of WT C and WT NC?",
+    answers: {
+      a: "`r y.1 <- voom(d0[-which(apply(cpm(d0), 1, max) < 1),], mm); fit.1 <- lmFit(y.1, mm); tmp.1 <- contrasts.fit(fit.1, contr); tmp.1 <- eBayes(tmp.1); format(length(which(topTable(tmp.1, n = Inf, sort.by = "P")$adj.P.Val < 0.05)), big.mark = ",")`",
+      b: "`r format(length(which(top.table$adj.P.Val < 0.05)), big.mark = ",")`",
+      c: "0"
+    },
+    correctAnswer: "a"
+  }
+];
+
+buildQuiz(myQuestions3, quizContainer3);
+submitButton3.addEventListener('click', function() {showResults(myQuestions3, quizContainer3, resultsContainer3);});
+</script>
+
+*Note: If you changed the expression cutoff to answer quiz questions, before proceeding change it back to the original value and rerun the above code using "Run all chunks above" in the Run menu in RStudio.*
+
+# Linear models and contrasts
+
+Let's say we want to compare genotypes for cell type C.  The only thing we have to change is the call to makeContrasts:
+```{r}
+contr <- makeContrasts(groupWT.C - groupKOMIR150.C, levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05)) # number of DE genes
+top.table$Gene <- rownames(top.table)
+top.table <- top.table[,c("Gene", names(top.table)[1:6])]
+top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID),],logcpm[match(top.table$Gene,rownames(logcpm)),])
+
+write.table(top.table, file = "WT.C_v_KOMIR150.C.txt", row.names = F, sep = "\t", quote = F)
+```
+
+## What if we refit our model as a two-factor model (rather than using the group variable)?
+
+Create new model matrix:
+```{r two_factor}
+genotype <- factor(metadata$genotype, levels = c("WT", "KOMIR150", "KOTet3"))
+cell_type <- factor(metadata$cell_type, levels = c("C", "NC"))
+mouse <- factor(metadata$mouse, levels = c("110", "148", "158", "183", "198", "206", "2670", "7530", "7531", "7532", "H510", "H514"))
+mm <- model.matrix(~genotype*cell_type + mouse)
+```
+
+We are specifying that model includes effects for genotype, cell type, and the genotype-cell type interaction (which allows the differences between genotypes to differ across cell types).
+
+```{r}
+colnames(mm)
+```
+
+```{r}
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+head(coef(fit))
+colnames(coef(fit))
+```
+* The coefficient genotypeKOMIR150 represents the difference in mean expression between KOMIR150 and the reference genotype (WT), _for cell type C_ (the reference level for cell type)
+* The coefficient cell_typeNC represents the difference in mean expression between cell type NC and cell type C, _for genotype WT_
+* The coefficient genotypeKOMIR150:cell_typeNC is the difference between cell types NC and C of the differences between genotypes KOMIR150 and WT (the interaction effect).
+
+Let's estimate the difference between genotypes WT and KOMIR150 in cell type C.
+```{r}
+tmp <- contrasts.fit(fit, coef = 2) # Directly test second coefficient
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05)) # number of DE genes
+```
+We get the same results as with the model where each coefficient corresponded to a group mean.  In essence, these are the _same_ model, so use whichever is most convenient for what you are estimating.
+
+The interaction effects genotypeKOMIR150:cell_typeNC are easier to estimate and test in this setup.
+```{r}
+head(coef(fit))
+colnames(coef(fit))
+```
+
+```{r}
+tmp <- contrasts.fit(fit, coef = 16) # Test genotypeKOMIR150:cell_typeNC
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+The log fold change here is the difference between genotypes KOMIR150 and WT in the log fold changes between cell types NC and C.
+
+A gene for which this interaction effect is significant is one for which the effect of cell type differs between genotypes, and for which the effect of genotypes differs between cell types.
+
+### More complicated models
+Specifying a different model is simply a matter of changing the calls to model.matrix (and possibly to contrasts.fit).
+
+What if we want to adjust for a continuous variable like some health score?
+(We are making this data up here, but it would typically be a variable in your metadata.)
+```{r}
+# Generate example health data
+set.seed(99)
+HScore <- rnorm(n = 22, mean = 7.5, sd = 1)
+HScore
+```
+
+Model adjusting for HScore score:
+```{r}
+mm <- model.matrix(~0 + group + mouse + HScore)
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+contr <- makeContrasts(groupKOMIR150.NC - groupWT.NC,
+                       levels = colnames(coef(fit)))
+tmp <- contrasts.fit(fit, contr)
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+What if we want to look at the correlation of gene expression with a continuous variable like pH?
+```{r}
+# Generate example pH data
+set.seed(99)
+pH <- rnorm(n = 22, mean = 8, sd = 1.5)
+pH
+```
+
+Specify model matrix:
+```{r}
+mm <- model.matrix(~pH)
+head(mm)
+```
+
+```{r}
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+tmp <- contrasts.fit(fit, coef = 2) # test "pH" coefficient
+tmp <- eBayes(tmp)
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+head(top.table, 20)
+length(which(top.table$adj.P.Val < 0.05))
+```
+
+In this case, limma is fitting a linear regression model, which here is a straight line fit, with the slope and intercept defined by the model coefficients:
+```{r}
+ENSMUSG00000056054 <- y$E["ENSMUSG00000056054.10",]
+plot(ENSMUSG00000056054 ~ pH, ylim = c(0, 3.5))
+intercept <- coef(fit)["ENSMUSG00000056054.10", "(Intercept)"]
+slope <- coef(fit)["ENSMUSG00000056054.10", "pH"]
+abline(a = intercept, b = slope)
+slope
+```
+
+In this example, the log fold change logFC is the slope of the line, or the change in gene expression (on the log2 CPM scale) for each unit increase in pH.
+
+Here, a logFC of 0.20 means a 0.20 log2 CPM increase in gene expression for each unit increase in pH, or a 15% increase on the CPM scale (2^0.20 = 1.15).
+
+### A bit more on linear models
+
+Limma fits a linear model to each gene.
+
+Linear models include analysis of variance (ANOVA) models, linear regression, and any model of the form
+
+Y = &beta;<sub>0</sub> + &beta;<sub>1</sub>X<sub>1</sub> + &beta;<sub>2</sub>X<sub>2</sub> + ... + &beta;<sub>p</sub>X<sub>p</sub> + &epsilon;
+
+The covariates X can be:
+
+* a continuous variable (pH, HScore score, age, weight, temperature, etc.)
+* Dummy variables coding a categorical covariate (like cell type, genotype, and group)
+
+The &beta;'s are unknown parameters to be estimated.
+
+In limma, the &beta;'s are the log fold changes.  
+
+The error (residual) term &epsilon; is assumed to be normally distributed with a variance that is constant across the range of the data.
+
+Normally distributed means the residuals come from a distribution that looks like this:
+```{r, echo = F}
+hist(rnorm(n = 10000), main = "Normally Distributed Data", breaks=50)
+```
+
+The log2 transformation that voom applies to the counts makes the data "normal enough", but doesn't completely stabilize the variance:
+```{r}
+mm <- model.matrix(~0 + group + mouse)
+tmp <- voom(d, mm, plot = T)
+```
+
+The log2 counts per million are more variable at lower expression levels.  The variance weights calculated by voom address this situation.
+
+### Both edgeR and limma have VERY comprehensive user manuals
+
+The limma users' guide has great details on model specification.
+
+* [Limma voom](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf)
+
+* [edgeR](http://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf)
+
+## Quiz 4
+
+<div id="quiz4" class="quiz"></div>
+<button id="submit4">Submit Quiz</button>
+<div id="results4" class="output"></div>
+<script>
+quizContainer4 = document.getElementById('quiz4');
+resultsContainer4 = document.getElementById('results4');
+submitButton4 = document.getElementById('submit4');
+
+myQuestions4 = [
+  {
+      question: "For the model ~0 + group + mouse, what coefficients would you use in makeContrasts if you wanted to compare genotypes for the NC cell type",
+    answers: {
+      a: "groupWT.C - groupKOMIR150.C",
+      b: "groupWT.NC + groupKOMIR150.NC",
+      c: "groupWT.NC - groupKOMIR150.NC",
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "For the model ~0 + group + mouse, how many genes are differentially expressed between WT NC and KOMIR150 NC?",
+    answers: {
+      a: "`r mm.1 <- model.matrix(~0 + group + mouse); y.1 <- voom(d, mm.1); fit.1 <- lmFit(y.1, mm.1); tmp.1 <- contrasts.fit(fit.1, contrasts = makeContrasts(groupWT.NC - groupKOMIR150.NC, levels = colnames(coef(fit.1)))); tmp.1 <- eBayes(tmp.1); format(length(which(topTable(tmp.1, n = Inf, sort.by = "P")$adj.P.Val < 0.05)), big.mark = ",")`",
+      b: "`r mm.1 <- model.matrix(~0 + group + mouse); y.1 <- voom(d, mm.1); fit.1 <- lmFit(y.1, mm.1); tmp.1 <- contrasts.fit(fit.1, contrasts = makeContrasts(groupWT.C - groupKOMIR150.C, levels = colnames(coef(fit.1)))); tmp.1 <- eBayes(tmp.1); format(length(which(topTable(tmp.1, n = Inf, sort.by = "P")$adj.P.Val < 0.05)), big.mark = ",")`",
+      c: "`r mm.1 <- model.matrix(~0 + group + mouse); y.1 <- voom(d, mm.1); fit.1 <- lmFit(y.1, mm.1); tmp.1 <- contrasts.fit(fit.1, contrasts = makeContrasts(groupWT.C - groupWT.NC, levels = colnames(coef(fit.1)))); tmp.1 <- eBayes(tmp.1); format(length(which(topTable(tmp.1, n = Inf, sort.by = "P")$adj.P.Val < 0.05)), big.mark = ",")`",
+    },
+    correctAnswer: "a"
+  },
+  {
+    question: "Suppose you have a variable in your metadata called batch that shows the RNA extraction batch.  How would you change the model ~0 + group + mouse to adjust for batch?",
+    answers: {
+      a: "Change the formula in model.matrix() to ~0 + group + mouse + batch",
+      b: "Change the formula in model.matrix() to ~0 + group*batch + mouse",
+      c: "Change the coefficients in makeContrasts() to groupWT.C - groupKOMIR150.C - batch"
+    },
+    correctAnswer: "a"
+  }
+];
+
+buildQuiz(myQuestions4, quizContainer4);
+submitButton4.addEventListener('click', function() {showResults(myQuestions4, quizContainer4, resultsContainer4);});
+</script>
+
+# Simple plotting
+
+```{r}
+mm <- model.matrix(~genotype*cell_type + mouse)
+colnames(mm) <- make.names(colnames(mm))
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+contrast.matrix <- makeContrasts(genotypeKOMIR150, cell_typeNC, levels=colnames(coef(fit)))
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
+```
+
+## Volcano plot
+
+```{r fig.width=4, fig.height=4}
+volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="genotype")
+
+head(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
+     c("Gene.stable.ID", "Gene.name") ])
+identical(anno[match(rownames(fit2), anno$Gene.stable.ID,version),
+     c("Gene.stable.ID.version")], rownames(fit2))
+
+volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="genotype")
+
+```
+
+## Heatmap
+```{r fig.height=8}
+#using a red and blue color scheme without traces and scaling each row
+heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none")
+
+anno[match(rownames(top.table), anno$Gene.stable.ID.version),
+     c("Gene.stable.ID", "Gene.name")]
+identical(anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.stable.ID.version"], rownames(top.table))
+
+heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none", labRow = anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.name"])
+```
+
+## 2 factor venn diagram
+
+```{r fig.width=4, fig.height=4}
+results <- decideTests(fit2)
+vennDiagram(results)
+```
+
+## Download the Enrichment Analysis R Markdown document
+```{r download1, eval=FALSE}
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/data_analysis/enrichment_mm.Rmd", "enrichment_mm.Rmd")
+```
+
+```{r}
+sessionInfo()
+```

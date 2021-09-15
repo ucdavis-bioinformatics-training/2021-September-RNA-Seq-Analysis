@@ -49,14 +49,16 @@ library("gplots")
 ```
 
 
-## 1. Read in the counts table and create our DGEList (EdgeR)
+## 1. Read in the counts table and create our DGEList
+
 ```{r read_count_data}
-counts <- read.delim("rnaseq_workshop_counts_mm.txt", row.names = 1)
-dim(counts) # number of genes
+counts <- read.delim("rnaseq_workshop_counts.txt", row.names = 1)
 head(counts)
 ```
 
-Create Differential Gene Expression List Object (DGEList) object
+Create Differential Gene Expression List Object (DGEList) object 
+
+A DGEList is an object in the package edgeR for storing count data, normalization factors, and other information
 
 ```{r dgelist}
 d0 <- DGEList(counts)
@@ -64,7 +66,7 @@ d0 <- DGEList(counts)
   
 **1a\.** Read in Annotation
 ```{r read_annotation}
-anno <- read.delim("ensembl_mm_100.tsv",as.is=T)
+anno <- read.delim("ensembl_mm_104.tsv",as.is=T)
 dim(anno)
 head(anno)
 tail(anno)
@@ -130,7 +132,7 @@ dim(d) # number of genes left
 
 "Low-expressed" is subjective and depends on the dataset.
 
-Visualizaing your data with a Multidimensional scaling (MDS) plot.
+Visualizing your data with a Multidimensional scaling (MDS) plot.
 ```{r mds, fig.width=6}
 plotMDS(d, col = as.numeric(metadata$group), cex=1)
 ```
@@ -155,6 +157,9 @@ write.table(logcpm,"rnaseq_workshop_normalized_counts.txt",sep="\t",quote=F)
 ## 4. Voom transformation and calculation of variance weights
 
 Specify the model to be fitted.  We do this before using voom since voom uses variances of the model residuals (observed - fitted)
+
+* The model you use will change for every experiment, and this step should be given the most time and attention.*
+
 ```{r model}
 group <- metadata$group
 mouse <- metadata$mouse
@@ -162,7 +167,6 @@ mm <- model.matrix(~0 + group + mouse)
 head(mm)
 ```
 
-The above specifies a model where each coefficient corresponds to a group mean.
 
 **4a\.** **Voom**
 ```{r voom, fig.width=6}
@@ -208,7 +212,7 @@ contr
 tmp <- contrasts.fit(fit, contr)
 ```
 
-The variance characteristics of low expressed genes are different from high expressed genes, if treated the same, the effect is to over represent low expressed genes in the DE list. This is corrected for by voom. However, some genes will have increased variance that is not a result of low expression, but due to other random factors. We are going to run Empirical Bayes to adjust the variance of these genes.
+The variance characteristics of low expressed genes are different from high expressed genes, if treated the same, the effect is to over represent low expressed genes in the DE list. This is corrected for by the log transformation and voom. However, some genes will have increased or decreased variance that is not a result of low expression, but due to other random factors. We are going to run empirical Bayes to adjust the variance of these genes.
 
 Empirical Bayes smoothing of standard errors (shifts standard errors that are much larger or smaller than those from other genes towards the average standard error) (see "[Linear Models and Empirical Bayes Methods for Assessing Differential Expression in Microarray Experiments](https://www.degruyter.com/doi/10.2202/1544-6115.1027)"
 
@@ -219,7 +223,7 @@ tmp <- eBayes(tmp)
 
 ## 7. Multiple Testing Adjustment
 
-The TopTable. Ajust by Benjamini & Hochberg (BH), or its 'alias' fdr. "[Controlling the false discovery rate: a practical and powerful approach to multiple testing](http://www.jstor.org/stable/2346101).
+The TopTable. Adjust for multiple testing using method of Benjamini & Hochberg (BH), or its 'alias' fdr. "[Controlling the false discovery rate: a practical and powerful approach to multiple testing](http://www.jstor.org/stable/2346101).
 
 here `n=Inf` says to produce the topTable for **all** genes. 
 ```{r toptable}
@@ -243,7 +247,7 @@ length(which(top.table$adj.P.Val < 0.05))
 
 ## 8. Check your results for confidence.
 
-You've conducted an experiment, you've seen a phenotype. Now check which genes are most deferentially expressed (show the top 50)? Look up these top genes, their description and ensure they relate to your experiment/phenotype. 
+You've conducted an experiment, you've seen a phenotype. Now check which genes are most differentially expressed (show the top 50)? Look up these top genes, their description and ensure they relate to your experiment/phenotype. 
 ```{r de_genes_top50}
 head(top.table, 50)
 ```
@@ -255,21 +259,21 @@ Columns are
 * adj.P.Val: Benjamini-Hochberg false discovery rate adjusted p-value
 * B: log-odds that gene is DE (arguably less useful than the other columns)
 
-ENSMUSG00000030203 has higher expression at WT NC than at WT C (logFC is netative).  ENSMUSG00000026193 has higher expression at WT C than at WT NC (logFC is positive).
+ENSMUSG00000030203.18 has higher expression at WT NC than at WT C (logFC is negative).  ENSMUSG00000026193.16 has higher expression at WT C than at WT NC (logFC is positive).
 
-In the paper, the authors specify that NC cells were identified by low expression of Ly6C (ENSMUSG00000079018). Is this gene differentially expressed?
+In the paper, the authors specify that NC cells were identified by low expression of Ly6C (which is now called Ly6c1 or ENSMUSG00000079018.11).  Is this gene differentially expressed?
 ```{r}
-top.table["ENSMUSG00000079018",]
-d0$counts["ENSMUSG00000079018",]
+top.table["ENSMUSG00000079018.11",]
+d0$counts["ENSMUSG00000079018.11",]
 ```
 
-Ly6C was removed from our data by the filtering step, because the maximum counts for the gene did not exceed 2.
+Ly6c1 was removed from our data by the filtering step, because the maximum counts for the gene did not exceed 2.
 
 ## 9. Write top.table to a file, adding in cpms and annotation
 ```{r}
 top.table$Gene <- rownames(top.table)
 top.table <- top.table[,c("Gene", names(top.table)[1:6])]
-top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID),],logcpm[match(top.table$Gene,rownames(logcpm)),])
+top.table <- data.frame(top.table,anno[match(top.table$Gene,anno$Gene.stable.ID.version),],logcpm[match(top.table$Gene,rownames(logcpm)),])
 
 head(top.table)
 write.table(top.table, file = "WT.C_v_WT.NC.txt", row.names = F, sep = "\t", quote = F)
@@ -306,6 +310,7 @@ We are specifying that model includes effects for genotype, cell type, and the g
 ```{r}
 colnames(mm)
 ```
+
 ```{r}
 y <- voom(d, mm, plot = F)
 fit <- lmFit(y, mm)
@@ -348,6 +353,7 @@ A gene for which this interaction effect is significant is one for which the eff
 Specifying a different model is simply a matter of changing the calls to model.matrix (and possibly to contrasts.fit).
 
 What if we want to adjust for a continuous variable like some health score?
+(We are making this data up here, but it would typically be a variable in your metadata.)
 ```{r}
 # Generate example health data
 set.seed(99)
@@ -395,10 +401,10 @@ length(which(top.table$adj.P.Val < 0.05))
 
 In this case, limma is fitting a linear regression model, which here is a straight line fit, with the slope and intercept defined by the model coefficients:
 ```{r}
-ENSMUSG00000056054 <- y$E["ENSMUSG00000056054",]
+ENSMUSG00000056054 <- y$E["ENSMUSG00000056054.10",]
 plot(ENSMUSG00000056054 ~ pH, ylim = c(0, 3.5))
-intercept <- coef(fit)["ENSMUSG00000056054", "(Intercept)"]
-slope <- coef(fit)["ENSMUSG00000056054", "pH"]
+intercept <- coef(fit)["ENSMUSG00000056054.10", "(Intercept)"]
+slope <- coef(fit)["ENSMUSG00000056054.10", "pH"]
 abline(a = intercept, b = slope)
 slope
 ```
@@ -413,17 +419,18 @@ Limma fits a linear model to each gene.
 
 Linear models include analysis of variance (ANOVA) models, linear regression, and any model of the form
 
-$$Y = \beta_0 + \beta_{1}X_{1} + \beta_{2}X_{2} + \dots + \beta_{p}X_{p} + \epsilon$$
+Y = &beta;<sub>0</sub> + &beta;<sub>1</sub>X<sub>1</sub> + &beta;<sub>2</sub>X<sub>2</sub> + ... + &beta;<sub>p</sub>X<sub>p</sub> + &epsilon;
+
 The covariates X can be:
 
 * a continuous variable (pH, HScore score, age, weight, temperature, etc.)
-* Dummy variables coding a categorical covariate (like factor1, factor2, and group)
+* Dummy variables coding a categorical covariate (like cell type, genotype, and group)
 
-The $\beta$'s are unknown parameters to be estimated.
+The &beta;'s are unknown parameters to be estimated.
 
-In limma, the $\beta$'s are the log fold changes.  
+In limma, the &beta;'s are the log fold changes.  
 
-The error (residual) term $\epsilon$ is assumed to be normally distributed with a variance that is constant across the range of the data.
+The error (residual) term &epsilon; is assumed to be normally distributed with a variance that is constant across the range of the data.
 
 Normally distributed means the residuals come from a distribution that looks like this:
 ```{r, echo = F}
@@ -432,6 +439,7 @@ hist(rnorm(n = 10000), main = "Normally Distributed Data", breaks=50)
 
 The log2 transformation that voom applies to the counts makes the data "normal enough", but doesn't completely stabilize the variance:
 ```{r}
+mm <- model.matrix(~0 + group + mouse)
 tmp <- voom(d, mm, plot = T)
 ```
 
@@ -464,12 +472,12 @@ top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
 ```{r fig.width=4, fig.height=4}
 volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="genotype")
 
-head(anno[match(rownames(fit2), anno$Gene.stable.ID),
-     c("Gene.stable.ID", "Gene.name") ])
-identical(anno[match(rownames(fit2), anno$Gene.stable.ID),
-     c("Gene.stable.ID")], rownames(fit2))
+head(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
+     c("Gene.stable.ID.version", "Gene.name") ])
+identical(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
+     c("Gene.stable.ID.version")], rownames(fit2))
 
-volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID), "Gene.name"], main="genotype")
+volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="genotype")
 
 ```
 
@@ -478,11 +486,11 @@ volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gen
 #using a red and blue color scheme without traces and scaling each row
 heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none")
 
-anno[match(rownames(top.table), anno$Gene.stable.ID),
-     c("Gene.stable.ID", "Gene.name")]
-identical(anno[match(rownames(top.table), anno$Gene.stable.ID), "Gene.stable.ID"], rownames(top.table))
+anno[match(rownames(top.table), anno$Gene.stable.ID.version),
+     c("Gene.stable.ID.version", "Gene.name")]
+identical(anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.stable.ID.version"], rownames(top.table))
 
-heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none", labRow = anno[match(rownames(top.table), anno$Gene.stable.ID), "Gene.name"])
+heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none", labRow = anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.name"])
 ```
 
 ## 2 factor venn diagram

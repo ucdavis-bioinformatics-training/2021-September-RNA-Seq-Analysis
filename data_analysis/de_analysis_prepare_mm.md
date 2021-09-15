@@ -1,13 +1,11 @@
 
 # Create a new RStudio project
 
-Open RStudio and create a new project, for more info see (Using-Projects)[https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects]
+Open RStudio and create a new project, for more info see [Using-Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects)
 
-* File > New Project > New Directory > New Project (name the new directory, Ex. mRNA_Seq_Workshop) and check "use packrat with this project", or "use renv with this project" if your using the devel version.
+* File > New Project > New Directory > New Project (name the new directory, Ex. mRNA_Seq_Workshop).
 
 Learn more about [renv](https://rstudio.github.io/renv/articles/renv.html)
-
-Learn more about [packrat](https://rstudio.github.io/packrat/)
 
 ## Install the needed R packages
 
@@ -15,49 +13,41 @@ Set some options and make sure the packages edgeR, gplots, RColorBrewer, topGO, 
 
 In the R console run the following commands
 ```r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
 if (!any(rownames(installed.packages()) == "edgeR")){
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
   BiocManager::install("edgeR")
 }
 library(edgeR)
 
 if (!any(rownames(installed.packages()) == "topGO")){
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
   BiocManager::install("topGO")
 }
 library(topGO)
 
 if (!any(rownames(installed.packages()) == "KEGGREST")){
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
   BiocManager::install("KEGGREST")
 }
 library(KEGGREST)
 
 if (!any(rownames(installed.packages()) == "Rgraphviz")){
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
   BiocManager::install("Rgraphviz")
 }
 library(Rgraphviz)
 
 if (!any(rownames(installed.packages()) == "org.Mm.eg.db")){
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
   BiocManager::install("org.Mm.eg.db")
 }
 library(org.Mm.eg.db)
 
-library(edgeR)
 if (!any(rownames(installed.packages()) == "gplots")){
-install.packages("gplots")
+    BiocManager::install("gplots")
 }
 library(gplots)
 
 if (!any(rownames(installed.packages()) == "RColorBrewer")){
-install.packages("RColorBrewer")
+    BiocManager::install("RColorBrewer")
 }
 library(RColorBrewer)
 ```
@@ -67,20 +57,26 @@ library(RColorBrewer)
 In the R console run the following command
 
 ```r
-download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/data_analysis/DE_Analysis_mm.Rmd", "DE_Analysis_mm.Rmd")
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/data_analysis/DE_Analysis_mm.Rmd", "DE_Analysis_mm.Rmd")
 ```
 
 ## Download the data file for the workshop document and preview/open it
 
-This is the the counts file generated after running [Generating counts tables](https://ucdavis-bioinformatics-training.github.io/2020-mRNA_Seq_Workshop/data_reduction/counts).
+This is the the counts file generated after running [Generating counts tables](https://ucdavis-bioinformatics-training.github.io/2021-September-RNA-Seq-Analysis/data_reduction/counts).
 
 I've also uploaded to the github repo. In the R console run the following command.
 ```r
-download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/datasets/rnaseq_workshop_counts_mm.txt", "rnaseq_workshop_counts_mm.txt")
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/datasets/rnaseq_workshop_counts.txt", "rnaseq_workshop_counts.txt")
 ```
 
 ```r
-download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2020-mRNA_Seq_Workshop/master/datasets/ensembl_mm_100.tsv", "ensembl_mm_100.tsv")
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/datasets/ensembl_mm_104.tsv", "ensembl_mm_104.tsv")
+```
+
+#### For the salmon datasets
+
+```r
+download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/datasets/rnaseq_salmon_workshop_counts.txt", "rnaseq_salmon_workshop_counts.txt")
 ```
 
 ### Edit the file YAML portion
@@ -88,7 +84,7 @@ download.file("https://raw.githubusercontent.com/ucdavis-bioinformatics-training
 The top YAML (YAML ain't markup language) portion of the doc tells RStudio how to parse the document.
 
 <pre><code>---
-title: "Data_in_R"
+title: "RNAseq Data Analysis in R"
 author: your_name
 date: current_date
 output:

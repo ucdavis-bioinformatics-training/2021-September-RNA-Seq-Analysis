@@ -50,7 +50,7 @@ library(topGO)
 ##     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
 ##     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
 ##     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-##     union, unique, unsplit, which, which.max, which.min
+##     union, unique, unsplit, which.max, which.min
 ```
 
 ```
@@ -95,9 +95,20 @@ library(topGO)
 ```
 
 ```
-## The following object is masked from 'package:base':
+## The following objects are masked from 'package:base':
 ## 
-##     expand.grid
+##     expand.grid, I, unname
+```
+
+```
+## 
+## Attaching package: 'IRanges'
+```
+
+```
+## The following object is masked from 'package:grDevices':
+## 
+##     windows
 ```
 
 ```
@@ -198,8 +209,8 @@ head(geneList)
 ```
 
 ```
-##        74127        70686        14268        20112        67241        66775 
-## 9.057118e-18 3.288834e-17 6.570900e-17 6.921801e-17 2.519371e-16 2.746416e-16
+##        67241        12772        68891        70686       219140        14268 
+## 1.162922e-19 7.630203e-19 8.283175e-19 1.182848e-17 1.973093e-17 2.376095e-17
 ```
 
 ```r
@@ -217,7 +228,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 10340 GO terms found. )
+## 	( 10598 GO terms found. )
 ```
 
 ```
@@ -226,7 +237,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 14256 GO terms and 33631 relations. )
+## 	( 14275 GO terms and 32496 relations. )
 ```
 
 ```
@@ -235,7 +246,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 10801 genes annotated to the GO terms. )
+## 	( 11075 genes annotated to the GO terms. )
 ```
 
 **2\.** The topGOdata object is then used as input for enrichment testing:
@@ -249,7 +260,7 @@ resultKS <- runTest(GOdata, algorithm = "weight01", statistic = "ks")
 ## 
 ## 			 -- Weight01 Algorithm -- 
 ## 
-## 		 the algorithm is scoring 14256 nontrivial nodes
+## 		 the algorithm is scoring 14275 nontrivial nodes
 ## 		 parameters: 
 ## 			 test statistic: ks
 ## 			 score order: increasing
@@ -257,104 +268,109 @@ resultKS <- runTest(GOdata, algorithm = "weight01", statistic = "ks")
 
 ```
 ## 
-## 	 Level 19:	2 nodes to be scored	(0 eliminated genes)
+## 	 Level 20:	1 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 18:	17 nodes to be scored	(0 eliminated genes)
+## 	 Level 19:	8 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 17:	43 nodes to be scored	(6 eliminated genes)
+## 	 Level 18:	17 nodes to be scored	(1 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 16:	93 nodes to be scored	(47 eliminated genes)
+## 	 Level 17:	47 nodes to be scored	(30 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 15:	190 nodes to be scored	(136 eliminated genes)
+## 	 Level 16:	100 nodes to be scored	(62 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 14:	393 nodes to be scored	(361 eliminated genes)
+## 	 Level 15:	213 nodes to be scored	(158 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 13:	728 nodes to be scored	(820 eliminated genes)
+## 	 Level 14:	417 nodes to be scored	(391 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 12:	1197 nodes to be scored	(1767 eliminated genes)
+## 	 Level 13:	747 nodes to be scored	(947 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 11:	1610 nodes to be scored	(3355 eliminated genes)
+## 	 Level 12:	1191 nodes to be scored	(1967 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 10:	1982 nodes to be scored	(4694 eliminated genes)
+## 	 Level 11:	1621 nodes to be scored	(3610 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 9:	2084 nodes to be scored	(5936 eliminated genes)
+## 	 Level 10:	1969 nodes to be scored	(5233 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 8:	1927 nodes to be scored	(7081 eliminated genes)
+## 	 Level 9:	2066 nodes to be scored	(6445 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 7:	1662 nodes to be scored	(8002 eliminated genes)
+## 	 Level 8:	1885 nodes to be scored	(7718 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 6:	1201 nodes to be scored	(8740 eliminated genes)
+## 	 Level 7:	1641 nodes to be scored	(8599 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 5:	666 nodes to be scored	(9091 eliminated genes)
+## 	 Level 6:	1207 nodes to be scored	(9234 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 4:	313 nodes to be scored	(9334 eliminated genes)
+## 	 Level 5:	684 nodes to be scored	(9637 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 3:	124 nodes to be scored	(9467 eliminated genes)
+## 	 Level 4:	317 nodes to be scored	(9871 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 2:	23 nodes to be scored	(9520 eliminated genes)
+## 	 Level 3:	120 nodes to be scored	(9984 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 1:	1 nodes to be scored	(9596 eliminated genes)
+## 	 Level 2:	23 nodes to be scored	(10043 eliminated genes)
+```
+
+```
+## 
+## 	 Level 1:	1 nodes to be scored	(10079 eliminated genes)
 ```
 
 ```r
 tab <- GenTable(GOdata, raw.p.value = resultKS, topNodes = length(resultKS@score), numChar = 120)
 ```
 
-topGO preferentially tests more specific terms, utilizing the topology of the GO graph. The algorithms used are described in detail [here](https://academic.oup.com/bioinformatics/article/22/13/1600/193669).
+topGO by default preferentially tests more specific terms, utilizing the topology of the GO graph. The algorithms used are described in detail [here](https://academic.oup.com/bioinformatics/article/22/13/1600/193669).
 
 
 ```r
@@ -364,36 +380,36 @@ head(tab, 15)
 ```
 ##         GO.ID                                                      Term
 ## 1  GO:0045087                                    innate immune response
-## 2  GO:1904469    positive regulation of tumor necrosis factor secretion
-## 3  GO:0007229                       integrin-mediated signaling pathway
-## 4  GO:0071285                          cellular response to lithium ion
-## 5  GO:0030036                           actin cytoskeleton organization
-## 6  GO:0008150                                        biological_process
-## 7  GO:0045766                       positive regulation of angiogenesis
-## 8  GO:0031623                                  receptor internalization
-## 9  GO:0006979                              response to oxidative stress
-## 10 GO:0006002                    fructose 6-phosphate metabolic process
-## 11 GO:1901224            positive regulation of NIK/NF-kappaB signaling
-## 12 GO:0032731      positive regulation of interleukin-1 beta production
-## 13 GO:0042742                             defense response to bacterium
-## 14 GO:0050861  positive regulation of B cell receptor signaling pathway
-## 15 GO:0045944 positive regulation of transcription by RNA polymerase II
+## 2  GO:0045944 positive regulation of transcription by RNA polymerase II
+## 3  GO:0051607                                 defense response to virus
+## 4  GO:0045766                       positive regulation of angiogenesis
+## 5  GO:0031623                                  receptor internalization
+## 6  GO:0006002                    fructose 6-phosphate metabolic process
+## 7  GO:0042742                             defense response to bacterium
+## 8  GO:0045071           negative regulation of viral genome replication
+## 9  GO:0006954                                     inflammatory response
+## 10 GO:0007229                       integrin-mediated signaling pathway
+## 11 GO:0001525                                              angiogenesis
+## 12 GO:0051897         positive regulation of protein kinase B signaling
+## 13 GO:0070374              positive regulation of ERK1 and ERK2 cascade
+## 14 GO:0032731      positive regulation of interleukin-1 beta production
+## 15 GO:0008347                                      glial cell migration
 ##    Annotated Significant Expected raw.p.value
-## 1        438         438      438     1.6e-06
-## 2         18          18       18     1.8e-05
-## 3         66          66       66     3.5e-05
-## 4         10          10       10     4.0e-05
-## 5        441         441      441     4.7e-05
-## 6      10801       10801    10801     4.7e-05
-## 7        114         114      114     6.1e-05
-## 8         81          81       81     8.4e-05
-## 9        308         308      308     0.00010
-## 10         7           7        7     0.00014
-## 11        56          56       56     0.00015
-## 12        40          40       40     0.00016
-## 13       127         127      127     0.00018
-## 14         7           7        7     0.00020
-## 15       760         760      760     0.00022
+## 1        520         520      520     1.0e-10
+## 2        777         777      777     7.7e-08
+## 3        200         200      200     1.1e-06
+## 4        105         105      105     1.4e-06
+## 5         86          86       86     1.6e-06
+## 6         10          10       10     2.1e-06
+## 7        169         169      169     2.2e-06
+## 8         44          44       44     3.7e-06
+## 9        460         460      460     4.1e-06
+## 10        68          68       68     4.8e-06
+## 11       326         326      326     5.1e-06
+## 12        69          69       69     6.1e-06
+## 13       121         121      121     7.0e-06
+## 14        45          45       45     9.9e-06
+## 15        44          44       44     1.0e-05
 ```
 
 * Annotated: number of genes (in our gene list) that are annotated with the term
@@ -403,7 +419,7 @@ head(tab, 15)
 
 The Kolmogorov-Smirnov test directly compares two probability distributions based on their maximum distance.  
 
-To illustrate the KS test, we plot probability distributions of p-values that are and that are not annotated with the term GO:0046661 "male sex differentiation" (66 genes) p-value 0.6494.  (This won't exactly match what topGO does due to their elimination algorithm):
+To illustrate the KS test, we plot probability distributions of p-values that are and that are not annotated with the term GO:0046661 "male sex differentiation" (66 genes) p-value 0.8721.  (This won't exactly match what topGO does due to their elimination algorithm):
 
 
 ```r
@@ -421,7 +437,7 @@ legend("bottomright", legend = c("Genes Annotated with 'male sex differentiation
 
 ![](enrichment_mm_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
-versus the probability distributions of p-values that are and that are not annotated with the term GO:0007229 "integrin-mediated signaling pathway" (66 genes) p-value 3.5x10-5.
+versus the probability distributions of p-values that are and that are not annotated with the term GO:0007229 "integrin-mediated signaling pathway" (66 genes) p-value 9.8x10-5.
 
 
 ```r
@@ -488,11 +504,11 @@ showSigOfNodes(GOdata, score(resultKS), firstSigNodes = 2, useInfo = "def")
 ```
 ## $dag
 ## A graphNEL graph with directed edges
-## Number of Nodes = 90 
-## Number of Edges = 191 
+## Number of Nodes = 77 
+## Number of Edges = 171 
 ## 
 ## $complete.dag
-## [1] "A graph with 90 nodes."
+## [1] "A graph with 77 nodes."
 ```
 
 ```r
@@ -500,6 +516,7 @@ par(cex = 1)
 ```
 
 **3\.** topGO Example Using Fisher's Exact Test
+
 Next, we use Fisher's exact test to test for GO enrichment among significantly DE genes.
 
 Create topGOdata object:
@@ -519,7 +536,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 10340 GO terms found. )
+## 	( 10598 GO terms found. )
 ```
 
 ```
@@ -528,7 +545,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 14256 GO terms and 33631 relations. )
+## 	( 14275 GO terms and 32496 relations. )
 ```
 
 ```
@@ -537,7 +554,7 @@ GOdata <- new("topGOdata",
 ```
 
 ```
-## 	( 10801 genes annotated to the GO terms. )
+## 	( 11075 genes annotated to the GO terms. )
 ```
 
 Run Fisher's Exact Test:
@@ -550,7 +567,7 @@ resultFisher <- runTest(GOdata, algorithm = "elim", statistic = "fisher")
 ## 
 ## 			 -- Elim Algorithm -- 
 ## 
-## 		 the algorithm is scoring 12385 nontrivial nodes
+## 		 the algorithm is scoring 12751 nontrivial nodes
 ## 		 parameters: 
 ## 			 test statistic: fisher
 ## 			 cutOff: 0.01
@@ -558,97 +575,102 @@ resultFisher <- runTest(GOdata, algorithm = "elim", statistic = "fisher")
 
 ```
 ## 
-## 	 Level 19:	2 nodes to be scored	(0 eliminated genes)
+## 	 Level 20:	1 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 18:	14 nodes to be scored	(0 eliminated genes)
+## 	 Level 19:	8 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 17:	33 nodes to be scored	(0 eliminated genes)
+## 	 Level 18:	16 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 16:	76 nodes to be scored	(0 eliminated genes)
+## 	 Level 17:	37 nodes to be scored	(0 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 15:	157 nodes to be scored	(26 eliminated genes)
+## 	 Level 16:	82 nodes to be scored	(19 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 14:	324 nodes to be scored	(26 eliminated genes)
+## 	 Level 15:	182 nodes to be scored	(57 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 13:	585 nodes to be scored	(144 eliminated genes)
+## 	 Level 14:	353 nodes to be scored	(57 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 12:	988 nodes to be scored	(1330 eliminated genes)
+## 	 Level 13:	614 nodes to be scored	(204 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 11:	1348 nodes to be scored	(1422 eliminated genes)
+## 	 Level 12:	1004 nodes to be scored	(1529 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 10:	1714 nodes to be scored	(1925 eliminated genes)
+## 	 Level 11:	1420 nodes to be scored	(1931 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 9:	1821 nodes to be scored	(2072 eliminated genes)
+## 	 Level 10:	1767 nodes to be scored	(2217 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 8:	1706 nodes to be scored	(2527 eliminated genes)
+## 	 Level 9:	1864 nodes to be scored	(2750 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 7:	1482 nodes to be scored	(3388 eliminated genes)
+## 	 Level 8:	1725 nodes to be scored	(3389 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 6:	1076 nodes to be scored	(4313 eliminated genes)
+## 	 Level 7:	1498 nodes to be scored	(4400 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 5:	620 nodes to be scored	(5050 eliminated genes)
+## 	 Level 6:	1094 nodes to be scored	(5078 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 4:	296 nodes to be scored	(5709 eliminated genes)
+## 	 Level 5:	645 nodes to be scored	(5737 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 3:	119 nodes to be scored	(5817 eliminated genes)
+## 	 Level 4:	301 nodes to be scored	(6367 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 2:	23 nodes to be scored	(6511 eliminated genes)
+## 	 Level 3:	116 nodes to be scored	(6441 eliminated genes)
 ```
 
 ```
 ## 
-## 	 Level 1:	1 nodes to be scored	(6511 eliminated genes)
+## 	 Level 2:	23 nodes to be scored	(6596 eliminated genes)
+```
+
+```
+## 
+## 	 Level 1:	1 nodes to be scored	(6596 eliminated genes)
 ```
 
 ```r
@@ -659,19 +681,19 @@ head(tab)
 
 ```
 ##        GO.ID                                                           Term
-## 1 GO:0001525                                                   angiogenesis
-## 2 GO:0009967                     positive regulation of signal transduction
-## 3 GO:0051607                                      defense response to virus
-## 4 GO:0045944      positive regulation of transcription by RNA polymerase II
-## 5 GO:0043537 negative regulation of blood vessel endothelial cell migration
-## 6 GO:0006954                                          inflammatory response
+## 1 GO:0045087                                         innate immune response
+## 2 GO:0045944      positive regulation of transcription by RNA polymerase II
+## 3 GO:0042742                                  defense response to bacterium
+## 4 GO:0051607                                      defense response to virus
+## 5 GO:0030335                          positive regulation of cell migration
+## 6 GO:0051092 positive regulation of NF-kappaB transcription factor activity
 ##   Annotated Significant Expected raw.p.value
-## 1       311         197   154.44     2.3e-05
-## 2       922         537   457.84     9.2e-05
-## 3       183         116    90.87     0.00011
-## 4       760         426   377.40     0.00015
-## 5        20          18     9.93     0.00018
-## 6       426         248   211.54     0.00018
+## 1       520         346   280.35     2.2e-08
+## 2       777         492   418.90     6.6e-07
+## 3       169         120    91.11     3.4e-06
+## 4       200         139   107.83     4.0e-06
+## 5       363         236   195.70     8.4e-06
+## 6       117          85    63.08     2.3e-05
 ```
 * Annotated: number of genes (in our gene list) that are annotated with the term
 * Significant: Number of significantly DE genes annotated with that term (i.e. genes where geneList = 1)
@@ -689,7 +711,9 @@ and compares the probability of the observed table, conditional on the row and c
 
 Advantages over KS (or Wilcoxon) Tests:
 
-*Ease of interpretation
+* Ease of interpretation
+
+* Easier directional testing
 
 Disadvantages:
 
@@ -742,15 +766,18 @@ head(genes.by.pathway)
 
 ```
 ## $mmu00010
-##  [1] "15277"  "212032" "15275"  "216019" "103988" "14751"  "18641"  "18642" 
-##  [9] "56421"  "14121"  "14120"  "11674"  "230163" "11676"  "353204" "21991" 
-## [17] "14433"  "14447"  "18655"  "18663"  "18648"  "56012"  "13806"  "13807" 
-## [25] "13808"  "433182" "226265" "18746"  "18770"  "18597"  "18598"  "68263" 
-## [33] "235339" "13382"  "16828"  "16832"  "16833"  "106557" "11522"  "11529" 
-## [41] "26876"  "11532"  "58810"  "11669"  "11671"  "72535"  "110695" "56752" 
-## [49] "11670"  "67689"  "621603" "73458"  "68738"  "60525"  "319625" "72157" 
-## [57] "66681"  "14377"  "14378"  "68401"  "72141"  "12183"  "17330"  "18534" 
-## [65] "74551" 
+##  [1] "15277"     "212032"    "15275"     "216019"    "103988"    "14751"    
+##  [7] "18641"     "18642"     "56421"     "14121"     "14120"     "11674"    
+## [13] "230163"    "11676"     "353204"    "79459"     "21991"     "14433"    
+## [19] "115487111" "14447"     "18655"     "18663"     "18648"     "56012"    
+## [25] "13806"     "13807"     "13808"     "433182"    "226265"    "18746"    
+## [31] "18770"     "18597"     "18598"     "68263"     "235339"    "13382"    
+## [37] "16828"     "16832"     "16833"     "106557"    "11522"     "11529"    
+## [43] "26876"     "11532"     "58810"     "11669"     "11671"     "72535"    
+## [49] "110695"    "56752"     "11670"     "67689"     "621603"    "73458"    
+## [55] "68738"     "60525"     "319625"    "72157"     "66681"     "14377"    
+## [61] "14378"     "68401"     "72141"     "12183"     "17330"     "18534"    
+## [67] "74551"    
 ## 
 ## $mmu00020
 ##  [1] "12974"  "71832"  "104112" "11429"  "11428"  "15926"  "269951" "15929" 
@@ -762,21 +789,22 @@ head(genes.by.pathway)
 ##  [1] "14751"  "14380"  "14381"  "66171"  "100198" "110208" "66646"  "21881" 
 ##  [9] "83553"  "74419"  "21351"  "19895"  "232449" "71336"  "72157"  "66681" 
 ## [17] "19139"  "110639" "328099" "75456"  "19733"  "75731"  "235582" "11674" 
-## [25] "230163" "11676"  "353204" "14121"  "14120"  "18641"  "18642"  "56421" 
+## [25] "230163" "11676"  "353204" "79459"  "14121"  "14120"  "18641"  "18642" 
+## [33] "56421" 
 ## 
 ## $mmu00040
 ##  [1] "110006" "16591"  "22238"  "22236"  "94284"  "94215"  "394434" "394430"
 ##  [9] "394432" "394433" "72094"  "552899" "71773"  "394435" "394436" "100727"
-## [17] "231396" "100559" "112417" "243085" "22235"  "216558" "58810"  "68631" 
-## [25] "66646"  "102448" "11997"  "14187"  "11677"  "67861"  "67880"  "20322" 
-## [33] "71755"  "75847" 
+## [17] "231396" "100559" "112417" "243085" "613123" "22235"  "216558" "58810" 
+## [25] "68631"  "66646"  "102448" "11997"  "14187"  "11677"  "67861"  "67880" 
+## [33] "20322"  "71755"  "75847" 
 ## 
 ## $mmu00051
 ##  [1] "110119" "54128"  "29858"  "331026" "69080"  "218138" "22122"  "75540" 
 ##  [9] "234730" "15277"  "212032" "15275"  "216019" "18641"  "18642"  "56421" 
 ## [17] "14121"  "14120"  "18639"  "18640"  "170768" "270198" "319801" "16548" 
 ## [25] "20322"  "11997"  "14187"  "11677"  "67861"  "11674"  "230163" "11676" 
-## [33] "353204" "21991"  "225913"
+## [33] "353204" "79459"  "21991"  "225913"
 ## 
 ## $mmu00052
 ##  [1] "319625" "14635"  "14430"  "74246"  "216558" "72157"  "66681"  "15277" 
@@ -792,8 +820,8 @@ head(geneList)
 ```
 
 ```
-##        74127        70686        14268        20112        67241        66775 
-## 9.057118e-18 3.288834e-17 6.570900e-17 6.921801e-17 2.519371e-16 2.746416e-16
+##        67241        12772        68891        70686       219140        14268 
+## 1.162922e-19 7.630203e-19 8.283175e-19 1.182848e-17 1.973093e-17 2.376095e-17
 ```
 
 **2\.** Apply Wilcoxon rank-sum test to each pathway, testing if "in" p-values are smaller than "out" p-values:
@@ -826,27 +854,20 @@ head(outdat)
 ```
 
 ```
-##     pathway.code
-## 167     mmu04380
-## 193     mmu04662
-## 284     mmu05160
-## 291     mmu05167
-## 182     mmu04621
-## 150     mmu04210
-##                                                               pathway.name
-## 167                      Osteoclast differentiation - Mus musculus (mouse)
-## 193               B cell receptor signaling pathway - Mus musculus (mouse)
-## 284                                     Hepatitis C - Mus musculus (mouse)
-## 291 Kaposi sarcoma-associated herpesvirus infection - Mus musculus (mouse)
-## 182             NOD-like receptor signaling pathway - Mus musculus (mouse)
-## 150                                       Apoptosis - Mus musculus (mouse)
+##     pathway.code                                               pathway.name
+## 298     mmu05171      Coronavirus disease - COVID-19 - Mus musculus (mouse)
+## 168     mmu04380          Osteoclast differentiation - Mus musculus (mouse)
+## 184     mmu04621 NOD-like receptor signaling pathway - Mus musculus (mouse)
+## 291     mmu05164                         Influenza A - Mus musculus (mouse)
+## 287     mmu05160                         Hepatitis C - Mus musculus (mouse)
+## 195     mmu04662   B cell receptor signaling pathway - Mus musculus (mouse)
 ##          p.value Annotated
-## 167 8.157153e-09       109
-## 193 2.081783e-07        73
-## 284 2.713656e-07       116
-## 291 3.089061e-07       152
-## 182 5.723044e-07       145
-## 150 1.122652e-06       119
+## 298 9.957675e-12       176
+## 168 1.452822e-10       108
+## 184 2.557839e-10       147
+## 291 8.122958e-10       124
+## 287 1.359916e-09       117
+## 195 2.880583e-09        71
 ```
 * p.value: P-value for Wilcoxon rank-sum testing, testing that p-values from DE analysis for genes in the pathway are smaller than those not in the pathway
 * Annotated: Number of genes in the pathway (regardless of DE p-value)
@@ -863,8 +884,8 @@ head(foldChangeList)
 ```
 
 ```
-##     74127     70686     14268     20112     67241     66775 
-## -1.550654 -4.163331  4.755457 -3.190990 -2.440513  1.703374
+##     67241     12772     68891     70686    219140     14268 
+## -2.487303  2.163439  4.552604 -4.120822 -2.675552  4.806490
 ```
 
 ```r
@@ -879,7 +900,7 @@ mmu04380 <- pathview(gene.data  = foldChangeList,
 ```
 
 ```
-## Info: Working in directory /Users/mattsettles/projects/src/RStudio/mrnaseq_2020_july
+## Info: Working in directory C:/Users/bpdurbin/Desktop/2021-June-RNA-Seq-Analysis/data_analysis
 ```
 
 ```
@@ -895,40 +916,43 @@ sessionInfo()
 ```
 
 ```
-## R version 4.0.2 (2020-06-22)
-## Platform: x86_64-apple-darwin17.0 (64-bit)
-## Running under: macOS Catalina 10.15.5
+## R version 4.1.0 (2021-05-18)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 19042)
 ## 
 ## Matrix products: default
-## BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
 ## 
 ## attached base packages:
 ##  [1] grid      stats4    parallel  stats     graphics  grDevices utils    
 ##  [8] datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] Rgraphviz_2.32.0     pathview_1.28.1      org.Mm.eg.db_3.11.4 
-##  [4] KEGGREST_1.28.0      topGO_2.40.0         SparseM_1.78        
-##  [7] GO.db_3.11.4         AnnotationDbi_1.50.3 IRanges_2.22.2      
-## [10] S4Vectors_0.26.1     Biobase_2.48.0       graph_1.66.0        
-## [13] BiocGenerics_0.34.0 
+##  [1] Rgraphviz_2.36.0     pathview_1.32.0      org.Mm.eg.db_3.13.0 
+##  [4] KEGGREST_1.32.0      topGO_2.44.0         SparseM_1.81        
+##  [7] GO.db_3.13.0         AnnotationDbi_1.54.1 IRanges_2.26.0      
+## [10] S4Vectors_0.30.0     Biobase_2.52.0       graph_1.70.0        
+## [13] BiocGenerics_0.38.0 
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          compiler_4.0.2      XVector_0.28.0     
-##  [4] bitops_1.0-6        zlibbioc_1.34.0     tools_4.0.2        
-##  [7] digest_0.6.25       bit_4.0.3           RSQLite_2.2.0      
-## [10] evaluate_0.14       memoise_1.1.0       lattice_0.20-41    
-## [13] pkgconfig_2.0.3     png_0.1-7           rlang_0.4.7        
-## [16] KEGGgraph_1.48.0    DBI_1.1.0           curl_4.3           
-## [19] yaml_2.2.1          xfun_0.16           stringr_1.4.0      
-## [22] httr_1.4.2          knitr_1.29          Biostrings_2.56.0  
-## [25] vctrs_0.3.2         bit64_4.0.2         R6_2.4.1           
-## [28] XML_3.99-0.5        rmarkdown_2.3       org.Hs.eg.db_3.11.4
-## [31] blob_1.2.1          magrittr_1.5        htmltools_0.5.0    
-## [34] matrixStats_0.56.0  stringi_1.4.6       RCurl_1.98-1.2     
-## [37] crayon_1.3.4
+##  [1] xfun_0.23              lattice_0.20-44        vctrs_0.3.8           
+##  [4] htmltools_0.5.1.1      yaml_2.2.1             blob_1.2.1            
+##  [7] XML_3.99-0.6           rlang_0.4.11           DBI_1.1.1             
+## [10] bit64_4.0.5            matrixStats_0.59.0     GenomeInfoDbData_1.2.6
+## [13] stringr_1.4.0          zlibbioc_1.38.0        Biostrings_2.60.1     
+## [16] memoise_2.0.0          evaluate_0.14          knitr_1.33            
+## [19] fastmap_1.1.0          GenomeInfoDb_1.28.0    curl_4.3.1            
+## [22] highr_0.9              Rcpp_1.0.6             cachem_1.0.5          
+## [25] org.Hs.eg.db_3.13.0    XVector_0.32.0         bit_4.0.4             
+## [28] png_0.1-7              digest_0.6.27          stringi_1.6.2         
+## [31] tools_4.1.0            bitops_1.0-7           magrittr_2.0.1        
+## [34] RCurl_1.98-1.3         RSQLite_2.2.7          crayon_1.4.1          
+## [37] pkgconfig_2.0.3        KEGGgraph_1.52.0       rmarkdown_2.8         
+## [40] httr_1.4.2             R6_2.5.0               compiler_4.1.0
 ```
