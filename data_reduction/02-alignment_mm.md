@@ -22,17 +22,10 @@ mkdir References
 wget http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/GRCm39.primary_assembly.genome.fa.gz References
 wget http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.chr_patch_hapl_scaff.basic.annotation.gtf.gz References
 cd rnaseq_example
+wget https://raw.githubusercontent.com/ucdavis-bioinformatics-training/2021-September-RNA-Seq-Analysis/master/software_scripts/scripts/star_index.slurm
+sbatch star_index.slurm
 cp -r /share/biocore/workshops/2020_mRNAseq_July/HTS_testing .
 cp -r /share/biocore/workshops/2020_mRNAseq_July/01-HTS_Preproc .
-```
-
-
-*This document assumes [reference indexing](./02-alignment-indexref_mm.md) has been completed.*
-
-**IF** will need to run this command to update some reference changes our group made last night.
-
-```bash
-ln -s /share/biocore/workshops/2020_mRNAseq_July/References/star.overlap100.gencode.M25 /share/workshop/mrnaseq_workshop/$USER/rnaseq_example/References/.
 ```
 
 ---
