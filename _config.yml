@@ -58,9 +58,9 @@ navigation:
   - title: Annotation from BioMart
     url: data_analysis/annotation_mm
   - title: Differential Expression Analysis
-    url: data_analysis/DE_Analysis_mm
+    url: data_analysis/DE_Analysis_mm_with_quizzes
   - title: Pathway Analysis
-    url: data_analysis/enrichment_mm
+    url: data_analysis/enrichment_mm_with_quizzes
   - title: Comparison between STAR and Salmon
     url: data_analysis/compare_star_salmon_mm
 
