@@ -506,7 +506,7 @@ plot.ecdf(p.values.in, verticals = T, do.points = F, col = "red", lwd = 2, xlim 
 ecdf.out <- ecdf(p.values.out)
 xx <- unique(sort(c(seq(0, 1, length = 201), knots(ecdf.out))))
 lines(xx, ecdf.out(xx), col = "black", lwd = 2)
-legend("bottomright", legend = c("Genes Annotated with 'male sex differentiation'", "male sex differentiation'"), lwd = 2, col = 2:1, cex = 0.9)
+legend("bottomright", legend = c("Genes Annotated with 'male sex differentiation'", "Genes not annotated with male sex differentiation'"), lwd = 2, col = 2:1, cex = 0.9)
 ```
 
 ![](enrichment_mm_with_quizzes_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
@@ -975,19 +975,19 @@ head(outdat)
 
 ```
 ##     pathway.code                                               pathway.name
-## 298     mmu05171      Coronavirus disease - COVID-19 - Mus musculus (mouse)
-## 168     mmu04380          Osteoclast differentiation - Mus musculus (mouse)
-## 184     mmu04621 NOD-like receptor signaling pathway - Mus musculus (mouse)
-## 291     mmu05164                         Influenza A - Mus musculus (mouse)
-## 287     mmu05160                         Hepatitis C - Mus musculus (mouse)
-## 195     mmu04662   B cell receptor signaling pathway - Mus musculus (mouse)
+## 297     mmu05171      Coronavirus disease - COVID-19 - Mus musculus (mouse)
+## 167     mmu04380          Osteoclast differentiation - Mus musculus (mouse)
+## 290     mmu05164                         Influenza A - Mus musculus (mouse)
+## 286     mmu05160                         Hepatitis C - Mus musculus (mouse)
+## 194     mmu04662   B cell receptor signaling pathway - Mus musculus (mouse)
+## 183     mmu04621 NOD-like receptor signaling pathway - Mus musculus (mouse)
 ##          p.value Annotated
-## 298 9.957675e-12       176
-## 168 1.452822e-10       108
-## 184 2.557839e-10       147
-## 291 8.122958e-10       124
-## 287 1.359916e-09       117
-## 195 2.880583e-09        71
+## 297 9.957675e-12       176
+## 167 1.452822e-10       108
+## 290 8.122958e-10       124
+## 286 1.359916e-09       117
+## 194 2.880583e-09        71
+## 183 3.938880e-09       147
 ```
 * p.value: P-value for Wilcoxon rank-sum testing, testing that p-values from DE analysis for genes in the pathway are smaller than those not in the pathway
 * Annotated: Number of genes in the pathway (regardless of DE p-value)
@@ -1021,7 +1021,7 @@ mmu04380 <- pathview(gene.data  = foldChangeList,
 ```
 
 ```
-## Info: Working in directory C:/Users/bpdurbin/Desktop/2021-June-RNA-Seq-Analysis/data_analysis
+## Info: Working in directory C:/Users/bpdurbin/Documents/GitHub/2021-September-RNA-Seq-Analysis/data_analysis
 ```
 
 ```
@@ -1044,9 +1044,9 @@ myQuestions2 = [
   {
     question: "How many pathways have a p-value less than 0.05?",
     answers: {
-      a: "189",
+      a: "190",
       b: "340",
-      c: "216"
+      c: "217"
     },
     correctAnswer: "a"
   },
@@ -1087,7 +1087,7 @@ sessionInfo()
 ```
 
 ```
-## R version 4.1.0 (2021-05-18)
+## R version 4.1.1 (2021-08-10)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)
 ## Running under: Windows 10 x64 (build 19042)
 ## 
@@ -1122,8 +1122,8 @@ sessionInfo()
 ## [22] highr_0.9              Rcpp_1.0.6             cachem_1.0.5          
 ## [25] org.Hs.eg.db_3.13.0    XVector_0.32.0         bit_4.0.4             
 ## [28] png_0.1-7              digest_0.6.27          stringi_1.6.2         
-## [31] tools_4.1.0            bitops_1.0-7           magrittr_2.0.1        
+## [31] tools_4.1.1            bitops_1.0-7           magrittr_2.0.1        
 ## [34] RCurl_1.98-1.3         RSQLite_2.2.7          crayon_1.4.1          
 ## [37] pkgconfig_2.0.3        KEGGgraph_1.52.0       rmarkdown_2.8         
-## [40] httr_1.4.2             R6_2.5.0               compiler_4.1.0
+## [40] httr_1.4.2             R6_2.5.0               compiler_4.1.1
 ```
