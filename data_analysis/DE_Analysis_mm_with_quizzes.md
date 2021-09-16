@@ -1833,7 +1833,7 @@ fit <- lmFit(y, mm)
 ```
 
 ```r
-contrast.matrix <- makeContrasts(genotypeKOMIR150, cell_typeNC, levels=colnames(coef(fit)))
+contrast.matrix <- makeContrasts(genotypeKOMIR150, levels=colnames(coef(fit)))
 fit2 <- contrasts.fit(fit, contrast.matrix)
 fit2 <- eBayes(fit2)
 top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
@@ -1843,37 +1843,37 @@ top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
 
 
 ```r
-volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="genotype")
+volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="Genotype KOMIR150 vs. WT for cell type C", cex.main = 0.8)
 ```
 
 ![](DE_Analysis_mm_with_quizzes_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
 ```r
 head(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
-     c("Gene.stable.ID", "Gene.name") ])
+     c("Gene.stable.ID.version", "Gene.name") ])
 ```
 
 ```
-##           Gene.stable.ID Gene.name
-## 48443 ENSMUSG00000098104    Gm6085
-## 48521 ENSMUSG00000033845    Mrpl15
-## 48766 ENSMUSG00000025903    Lypla1
-## 48915 ENSMUSG00000033813     Tcea1
-## 49347 ENSMUSG00000033793   Atp6v1h
-## 49551 ENSMUSG00000025907    Rb1cc1
+##       Gene.stable.ID.version Gene.name
+## 48443   ENSMUSG00000098104.2    Gm6085
+## 48521  ENSMUSG00000033845.14    Mrpl15
+## 48766  ENSMUSG00000025903.15    Lypla1
+## 48915  ENSMUSG00000033813.16     Tcea1
+## 49347  ENSMUSG00000033793.13   Atp6v1h
+## 49551  ENSMUSG00000025907.15    Rb1cc1
 ```
 
 ```r
-identical(anno[match(rownames(fit2), anno$Gene.stable.ID,version),
+identical(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
      c("Gene.stable.ID.version")], rownames(fit2))
 ```
 
 ```
-## [1] FALSE
+## [1] TRUE
 ```
 
 ```r
-volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="genotype")
+volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="Genotype KOMIR150 vs. WT for cell type C", cex.main = 0.8)
 ```
 
 ![](DE_Analysis_mm_with_quizzes_files/figure-html/unnamed-chunk-18-2.png)<!-- -->
@@ -1889,51 +1889,51 @@ heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", tr
 
 ```r
 anno[match(rownames(top.table), anno$Gene.stable.ID.version),
-     c("Gene.stable.ID", "Gene.name")]
+     c("Gene.stable.ID.version", "Gene.name")]
 ```
 
 ```
-##           Gene.stable.ID     Gene.name
-## 15527 ENSMUSG00000030703         Gdpd3
-## 43284 ENSMUSG00000044229         Nxpe4
-## 25910 ENSMUSG00000032012       Nectin1
-## 52793 ENSMUSG00000030748         Il4ra
-## 54841 ENSMUSG00000040152         Thbs1
-## 4616  ENSMUSG00000066687        Zbtb16
-## 47835 ENSMUSG00000067017    Capza1-ps1
-## 39290 ENSMUSG00000008348           Ubc
-## 27827 ENSMUSG00000096780   Tmem181b-ps
-## 44187 ENSMUSG00000020893          Per1
-## 21589 ENSMUSG00000028028         Alpk1
-## 3187  ENSMUSG00000039146        Ifi44l
-## 3155  ENSMUSG00000028037         Ifi44
-## 27579 ENSMUSG00000030365        Clec2i
-## 19396 ENSMUSG00000055435           Maf
-## 7979  ENSMUSG00000028619       Tceanc2
-## 10870 ENSMUSG00000024772          Ehd1
-## 36587 ENSMUSG00000051495       Irf2bp2
-## 40438 ENSMUSG00000042105        Inpp5f
-## 2310  ENSMUSG00000054008         Ndst1
-## 845   ENSMUSG00000096768       Gm47283
-## 16280 ENSMUSG00000076937         Iglc2
-## 24548 ENSMUSG00000055994          Nod2
-## 38695 ENSMUSG00000070372        Capza1
-## 13097 ENSMUSG00000100801       Gm15459
-## 1995  ENSMUSG00000033863          Klf9
-## 9425  ENSMUSG00000051439          Cd14
-## 41587 ENSMUSG00000035212        Leprot
-## 29618 ENSMUSG00000003545          Fosb
-## 20260 ENSMUSG00000028173           Wls
-## 29012 ENSMUSG00000034342           Cbl
-## 24843 ENSMUSG00000031431       Tsc22d3
-## 51174 ENSMUSG00000040139 9430038I01Rik
-## 38153 ENSMUSG00000048534          Jaml
-## 27991 ENSMUSG00000020108         Ddit4
-## 49768 ENSMUSG00000030577          Cd22
-## 43260 ENSMUSG00000035385          Ccl2
-## 27704 ENSMUSG00000045382         Cxcr4
-## 54994 ENSMUSG00000027435          Cd93
-## 4482  ENSMUSG00000042396          Rbm7
+##       Gene.stable.ID.version     Gene.name
+## 15527   ENSMUSG00000030703.9         Gdpd3
+## 43284  ENSMUSG00000044229.10         Nxpe4
+## 25910  ENSMUSG00000032012.10       Nectin1
+## 52793  ENSMUSG00000030748.10         Il4ra
+## 54841   ENSMUSG00000040152.9         Thbs1
+## 4616    ENSMUSG00000066687.6        Zbtb16
+## 47835   ENSMUSG00000067017.6    Capza1-ps1
+## 39290  ENSMUSG00000008348.10           Ubc
+## 27827   ENSMUSG00000096780.8   Tmem181b-ps
+## 44187  ENSMUSG00000020893.18          Per1
+## 21589  ENSMUSG00000028028.12         Alpk1
+## 3187    ENSMUSG00000039146.6        Ifi44l
+## 3155   ENSMUSG00000028037.14         Ifi44
+## 27579  ENSMUSG00000030365.12        Clec2i
+## 19396   ENSMUSG00000055435.7           Maf
+## 7979   ENSMUSG00000028619.16       Tceanc2
+## 10870  ENSMUSG00000024772.10          Ehd1
+## 36587   ENSMUSG00000051495.9       Irf2bp2
+## 40438  ENSMUSG00000042105.19        Inpp5f
+## 2310   ENSMUSG00000054008.10         Ndst1
+## 845     ENSMUSG00000096768.9       Gm47283
+## 16280   ENSMUSG00000076937.4         Iglc2
+## 24548  ENSMUSG00000055994.16          Nod2
+## 38695  ENSMUSG00000070372.12        Capza1
+## 13097   ENSMUSG00000100801.2       Gm15459
+## 1995    ENSMUSG00000033863.3          Klf9
+## 9425    ENSMUSG00000051439.8          Cd14
+## 41587  ENSMUSG00000035212.15        Leprot
+## 29618   ENSMUSG00000003545.4          Fosb
+## 20260  ENSMUSG00000028173.11           Wls
+## 29012  ENSMUSG00000034342.10           Cbl
+## 24843  ENSMUSG00000031431.14       Tsc22d3
+## 51174  ENSMUSG00000040139.15 9430038I01Rik
+## 38153   ENSMUSG00000048534.8          Jaml
+## 27991   ENSMUSG00000020108.5         Ddit4
+## 49768  ENSMUSG00000030577.15          Cd22
+## 43260   ENSMUSG00000035385.6          Ccl2
+## 27704   ENSMUSG00000045382.7         Cxcr4
+## 54994   ENSMUSG00000027435.9          Cd93
+## 4482   ENSMUSG00000042396.11          Rbm7
 ```
 
 ```r
@@ -1954,8 +1954,39 @@ heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", tr
 
 
 ```r
+mm <- model.matrix(~genotype*cell_type + mouse)
+colnames(mm) <- make.names(colnames(mm))
+y <- voom(d, mm, plot = F)
+```
+
+```
+## Coefficients not estimable: mouse206 mouse7531
+```
+
+```
+## Warning: Partial NA coefficients for 12954 probe(s)
+```
+
+```r
+fit <- lmFit(y, mm)
+```
+
+```
+## Coefficients not estimable: mouse206 mouse7531
+```
+
+```
+## Warning: Partial NA coefficients for 12954 probe(s)
+```
+
+```r
+contrast.matrix <- makeContrasts(genotypeKOMIR150, genotypeKOMIR150 + genotypeKOMIR150.cell_typeNC, levels=colnames(coef(fit)))
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
+
 results <- decideTests(fit2)
-vennDiagram(results)
+vennDiagram(results, names = c("C", "NC"), main = "DE Genes Between KOMIR150 and WT by Cell Type", cex.main = 0.8)
 ```
 
 ![](DE_Analysis_mm_with_quizzes_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
@@ -1972,7 +2003,7 @@ sessionInfo()
 ```
 
 ```
-## R version 4.1.0 (2021-05-18)
+## R version 4.1.1 (2021-08-10)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)
 ## Running under: Windows 10 x64 (build 19042)
 ## 
@@ -1993,9 +2024,9 @@ sessionInfo()
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] Rcpp_1.0.6         locfit_1.5-9.4     lattice_0.20-44    gtools_3.9.2      
-##  [5] digest_0.6.27      bitops_1.0-7       grid_4.1.0         magrittr_2.0.1    
+##  [5] digest_0.6.27      bitops_1.0-7       grid_4.1.1         magrittr_2.0.1    
 ##  [9] evaluate_0.14      highr_0.9          KernSmooth_2.23-20 rlang_0.4.11      
-## [13] stringi_1.6.2      rmarkdown_2.8      tools_4.1.0        stringr_1.4.0     
-## [17] xfun_0.23          yaml_2.2.1         compiler_4.1.0     caTools_1.18.2    
+## [13] stringi_1.6.2      rmarkdown_2.8      tools_4.1.1        stringr_1.4.0     
+## [17] xfun_0.23          yaml_2.2.1         compiler_4.1.1     caTools_1.18.2    
 ## [21] htmltools_0.5.1.1  knitr_1.33
 ```

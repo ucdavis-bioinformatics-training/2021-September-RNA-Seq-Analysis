@@ -768,7 +768,7 @@ mm <- model.matrix(~genotype*cell_type + mouse)
 colnames(mm) <- make.names(colnames(mm))
 y <- voom(d, mm, plot = F)
 fit <- lmFit(y, mm)
-contrast.matrix <- makeContrasts(genotypeKOMIR150, cell_typeNC, levels=colnames(coef(fit)))
+contrast.matrix <- makeContrasts(genotypeKOMIR150, levels=colnames(coef(fit)))
 fit2 <- contrasts.fit(fit, contrast.matrix)
 fit2 <- eBayes(fit2)
 top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
@@ -777,14 +777,14 @@ top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
 ## Volcano plot
 
 ```{r fig.width=4, fig.height=4}
-volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="genotype")
+volcanoplot(fit2, coef=1, highlight=8, names=rownames(fit2), main="Genotype KOMIR150 vs. WT for cell type C", cex.main = 0.8)
 
 head(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
-     c("Gene.stable.ID", "Gene.name") ])
-identical(anno[match(rownames(fit2), anno$Gene.stable.ID,version),
+     c("Gene.stable.ID.version", "Gene.name") ])
+identical(anno[match(rownames(fit2), anno$Gene.stable.ID.version),
      c("Gene.stable.ID.version")], rownames(fit2))
 
-volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="genotype")
+volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gene.stable.ID.version), "Gene.name"], main="Genotype KOMIR150 vs. WT for cell type C", cex.main = 0.8)
 
 ```
 
@@ -794,7 +794,7 @@ volcanoplot(fit2, coef=1, highlight=8, names=anno[match(rownames(fit2), anno$Gen
 heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none")
 
 anno[match(rownames(top.table), anno$Gene.stable.ID.version),
-     c("Gene.stable.ID", "Gene.name")]
+     c("Gene.stable.ID.version", "Gene.name")]
 identical(anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.stable.ID.version"], rownames(top.table))
 
 heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", trace="none", labRow = anno[match(rownames(top.table), anno$Gene.stable.ID.version), "Gene.name"])
@@ -802,9 +802,18 @@ heatmap.2(logcpm[rownames(top.table),],col=brewer.pal(11,"RdBu"),scale="row", tr
 
 ## 2 factor venn diagram
 
-```{r fig.width=4, fig.height=4}
+```{r fig.width=6, fig.height=6}
+mm <- model.matrix(~genotype*cell_type + mouse)
+colnames(mm) <- make.names(colnames(mm))
+y <- voom(d, mm, plot = F)
+fit <- lmFit(y, mm)
+contrast.matrix <- makeContrasts(genotypeKOMIR150, genotypeKOMIR150 + genotypeKOMIR150.cell_typeNC, levels=colnames(coef(fit)))
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+top.table <- topTable(fit2, coef = 1, sort.by = "P", n = 40)
+
 results <- decideTests(fit2)
-vennDiagram(results)
+vennDiagram(results, names = c("C", "NC"), main = "DE Genes Between KOMIR150 and WT by Cell Type", cex.main = 0.8)
 ```
 
 ## Download the Enrichment Analysis R Markdown document
